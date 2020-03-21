@@ -1,0 +1,2 @@
+django
+juntagrico>=1.2.2
