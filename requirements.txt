@@ -1,2 +1,2 @@
 django
-juntagrico>=1.2.2
+juntagrico>=1.2.2dev3

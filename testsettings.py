@@ -16,7 +16,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.admin',
     'juntagrico',
-    'calendar',
+    'crispy_forms',
+    'juntagrico_assignment_request',
 ]
 
 DATABASES = {
@@ -123,3 +124,6 @@ CACHES = {
             'TIMEOUT': None,
         }
     }
+
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
+CRISPY_FAIL_SILENTLY = not DEBUG

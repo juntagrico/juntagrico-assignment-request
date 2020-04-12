@@ -1,13 +1,13 @@
 """
 test URL Configuration for calendar development
 """
-from django.conf.urls import include, url
 from django.contrib import admin
 import juntagrico
+from django.urls import path, include
 
 urlpatterns = [
-    url(r'^admin/', admin.site.urls),
-    url(r'^', include('juntagrico.urls')),
-    url(r'^', include('calendar.urls')),
-    url(r'^$', juntagrico.views.home),
+    path(r'admin/', admin.site.urls),
+    path(r'', include('juntagrico.urls')),
+    path(r'', include('juntagrico_assignment_request.urls')),
+    path(r'', juntagrico.views.home),
 ]
