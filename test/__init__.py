@@ -7,10 +7,21 @@ from juntagrico.entity.member import Member
 
 @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
 class AssignmentRequestTestCase(TestCase):
-
     def setUp(self):
         self.set_up_member()
         self.set_up_area()
+
+    def assertGet(self, url, code=200, member=None):
+        login_member = member or self.member
+        self.client.force_login(login_member.user)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, code)
+
+    def assertPost(self, url, data=None, code=200, member=None):
+        login_member = member or self.member
+        self.client.force_login(login_member.user)
+        response = self.client.post(url, data)
+        self.assertEqual(response.status_code, code)
 
     @staticmethod
     def create_member(email):
@@ -27,26 +38,6 @@ class AssignmentRequestTestCase(TestCase):
         member.user.set_password('12345')
         member.user.save()
         return member
-
-    def assignment_request_data(self, approver=None, for_form=False):
-        if for_form:
-            if approver is None:
-                approver = ''
-            else:
-                approver = approver.pk
-        date = timezone.now()
-        data = {
-            'job_time': date.strftime('%Y-%m-%d %H:%M') if for_form else date,
-            'duration': 4,
-            'amount': 1,
-            'approver': approver,
-            'activityarea': self.area.pk if for_form else self.area,
-            'location': 'location',
-            'description': 'description'
-        }
-        if not for_form:
-            data['member'] = self.member
-        return data
 
     def set_up_member(self):
         """
@@ -97,14 +88,34 @@ class AssignmentRequestTestCase(TestCase):
         self.area = ActivityArea.objects.create(**area_data)
         self.area2 = ActivityArea.objects.create(**area_data2)
 
-    def assertGet(self, url, code=200, member=None):
-        login_member = member or self.member
-        self.client.force_login(login_member.user)
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, code)
+    def assignment_request_data(self, approver=None, for_form=False):
+        if for_form:
+            if approver is None:
+                approver = ''
+            else:
+                approver = approver.pk
+        date = timezone.now()
+        data = {
+            'job_time': date.strftime('%Y-%m-%d %H:%M') if for_form else date,
+            'duration': 4,
+            'amount': 1,
+            'approver': approver,
+            'activityarea': self.area.pk if for_form else self.area,
+            'location': 'location',
+            'description': 'description'
+        }
+        if not for_form:
+            data['member'] = self.member
+        return data
 
-    def assertPost(self, url, data=None, code=200, member=None):
-        login_member = member or self.member
-        self.client.force_login(login_member.user)
-        response = self.client.post(url, data)
-        self.assertEqual(response.status_code, code)
+    def assignment_response_data(self, decision='submit'):
+        """
+        :param decision: ['confirm', 'reject', 'submit'(default)]
+        """
+        return {
+            'response': 'response',
+            decision: True,
+            'amount': 2,
+            'activityarea': self.area.pk,
+            'location': 'location'
+        }

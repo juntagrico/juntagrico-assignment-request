@@ -68,14 +68,8 @@ class AssignmentRequestTests(AssignmentRequestTestCase):
     def test_assignment_confirmation_with_response_by_other_approver(self):
         ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.approver))
         self.assertGet(reverse('ar-respond-assignment-request', args=(ar.pk,)), member=self.approver)
-        data = {
-            'response': 'response',
-            'confirm': True,
-            'amount': 2,
-            'activityarea': self.area.pk,
-            'location': 'location'
-        }
-        self.assertPost(reverse('ar-respond-assignment-request', args=(ar.pk,)), data, 302, member=self.approver2)
+        self.assertPost(reverse('ar-respond-assignment-request', args=(ar.pk,)),
+                        self.assignment_response_data('confirm'), 302, member=self.approver2)
         ar.refresh_from_db()
         self.assertEqual(ar.status, AssignmentRequest.CONFIRMED)
         self.assertEqual(ar.approver, self.approver2)  # approver changed to actual approver
@@ -85,14 +79,8 @@ class AssignmentRequestTests(AssignmentRequestTestCase):
 
     def test_assignment_reply(self):
         ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.approver))
-        data = {
-            'response': 'response',
-            'submit': True,  # just a reply
-            'amount': 2,
-            'activityarea': self.area.pk,
-            'location': 'location'
-        }
-        self.assertPost(reverse('ar-respond-assignment-request', args=(ar.pk,)), data, 302, member=self.approver)
+        self.assertPost(reverse('ar-respond-assignment-request', args=(ar.pk,)),
+                        self.assignment_response_data('submit'), 302, member=self.approver)
         ar.refresh_from_db()
         self.assertEqual(ar.status, AssignmentRequest.REQUESTED)
         self.assertEqual(len(mail.outbox), 1)  # rejection email to user
@@ -100,14 +88,8 @@ class AssignmentRequestTests(AssignmentRequestTestCase):
 
     def test_assignment_rejection(self):
         ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.approver))
-        data = {
-            'response': 'response',
-            'reject': True,
-            'amount': 2,
-            'activityarea': self.area.pk,
-            'location': 'location'
-        }
-        self.assertPost(reverse('ar-respond-assignment-request', args=(ar.pk,)), data, 302, member=self.approver)
+        self.assertPost(reverse('ar-respond-assignment-request', args=(ar.pk,)),
+                        self.assignment_response_data('reject'), 302, member=self.approver)
         ar.refresh_from_db()
         self.assertEqual(ar.status, AssignmentRequest.REJECTED)
         self.assertEqual(len(mail.outbox), 1)  # rejection email to user
