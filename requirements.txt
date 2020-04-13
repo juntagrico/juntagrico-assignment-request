@@ -1,2 +1,2 @@
 django
-juntagrico>=1.2.2dev3
+git+https://github.com/juntagrico/juntagrico.git
