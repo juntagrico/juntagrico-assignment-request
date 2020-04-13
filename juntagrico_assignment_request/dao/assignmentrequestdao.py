@@ -19,4 +19,3 @@ class AssignmentRequestDao:
         perm = Permission.objects.get(codename='notified_on_unapproved_assignments')
         return Member.objects.filter(Q(user__groups__permissions=perm) |
                                      Q(user__user_permissions=perm)).distinct()
-

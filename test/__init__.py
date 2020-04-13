@@ -4,6 +4,8 @@ from django.utils import timezone
 from juntagrico.entity.jobs import ActivityArea
 from juntagrico.entity.member import Member
 
+from juntagrico_assignment_request.entity.assignment_request import AssignmentRequest
+
 
 @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
 class AssignmentRequestTestCase(TestCase):
@@ -88,7 +90,7 @@ class AssignmentRequestTestCase(TestCase):
         self.area = ActivityArea.objects.create(**area_data)
         self.area2 = ActivityArea.objects.create(**area_data2)
 
-    def assignment_request_data(self, approver=None, for_form=False):
+    def assignment_request_data(self, approver=None, for_form=False, approved=False):
         if for_form:
             if approver is None:
                 approver = ''
@@ -106,6 +108,8 @@ class AssignmentRequestTestCase(TestCase):
         }
         if not for_form:
             data['member'] = self.member
+            if approved:
+                data['status'] = AssignmentRequest.CONFIRMED
         return data
 
     def assignment_response_data(self, decision='submit'):

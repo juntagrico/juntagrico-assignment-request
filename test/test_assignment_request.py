@@ -35,8 +35,7 @@ class AssignmentRequestTests(AssignmentRequestTestCase):
 
     def test_assignment_request_not_deletable(self):
         # can not delete accepted assignment request
-        data = self.assignment_request_data(self.approver)
-        data['status'] = AssignmentRequest.CONFIRMED
+        data = self.assignment_request_data(self.approver, approved=True)
         ar = AssignmentRequest.objects.create(**data)
         self.assertGet(reverse('ar-delete-assignment-request', args=(ar.pk,)), 302)
         ar.refresh_from_db()
