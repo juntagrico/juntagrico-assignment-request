@@ -48,7 +48,7 @@ def request_assignment(request, sent=False):
 @login_required
 def delete_request_assignment(request, request_id):
     """
-    Request an assignment
+    Delete an assignment request
     """
 
     assignment_request = get_object_or_404(AssignmentRequest, id=request_id)
@@ -61,7 +61,7 @@ def delete_request_assignment(request, request_id):
 @login_required
 def edit_request_assignment(request, request_id):
     """
-    Request an assignment
+    Edit and assignment request
     """
 
     member = request.user.member
