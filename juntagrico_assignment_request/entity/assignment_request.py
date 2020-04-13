@@ -55,7 +55,7 @@ class AssignmentRequest(models.Model):
                               help_text=_('Hier "Bestätigt" auswählen, sonst zählt das Böhnli nicht!'))
     response = models.TextField(_('Antwort'), blank=True, null=True,
                                 help_text=_("Rückmeldung an Böhnli-beantrager. Kann leer bleiben."))
-    
+
     def __str__(self):
         return _('%s Anfrage #%s') % (Config.vocabulary('assignment'), self.id)
 

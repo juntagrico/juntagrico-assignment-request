@@ -77,20 +77,17 @@ class AssignmentRequestTests(AssignmentRequestTestCase):
         self.assertEqual(mail.outbox[0].to[0], self.approver.email)
         self.assertEqual(mail.outbox[1].to[0], self.member.email)
 
-    def test_assignment_reply(self):
+    def assignment_response(self, decision='submit', expected_status=AssignmentRequest.REQUESTED):
         ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.approver))
         self.assertPost(reverse('ar-respond-assignment-request', args=(ar.pk,)),
-                        self.assignment_response_data('submit'), 302, member=self.approver)
+                        self.assignment_response_data(decision), 302, member=self.approver)
         ar.refresh_from_db()
-        self.assertEqual(ar.status, AssignmentRequest.REQUESTED)
-        self.assertEqual(len(mail.outbox), 1)  # rejection email to user
+        self.assertEqual(ar.status, expected_status)
+        self.assertEqual(len(mail.outbox), 1)  # reply email to user
         self.assertEqual(mail.outbox[0].to[0], self.member.email)
 
+    def test_assignment_reply(self):
+        self.assignment_response()
+
     def test_assignment_rejection(self):
-        ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.approver))
-        self.assertPost(reverse('ar-respond-assignment-request', args=(ar.pk,)),
-                        self.assignment_response_data('reject'), 302, member=self.approver)
-        ar.refresh_from_db()
-        self.assertEqual(ar.status, AssignmentRequest.REJECTED)
-        self.assertEqual(len(mail.outbox), 1)  # rejection email to user
-        self.assertEqual(mail.outbox[0].to[0], self.member.email)
+        self.assignment_response('reject', AssignmentRequest.REJECTED)
