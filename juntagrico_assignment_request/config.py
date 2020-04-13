@@ -4,14 +4,10 @@ from django.conf import settings
 
 
 class AssignmentRequestConfig:
-    def __init__(self):
-        pass
-
     @staticmethod
     def emails(key):
-        if hasattr(settings, 'EMAILS'):
-            if key in settings.EMAILS:
-                return settings.EMAILS[key]
+        if hasattr(settings, 'EMAILS') and key in settings.EMAILS:
+            return settings.EMAILS[key]
         return {
             'new_assignment_request_mail': 'assignment_request/mails/new_assignment_request_mail.txt',
             'edited_assignment_request_mail': 'assignment_request/mails/edited_assignment_request_mail.txt',
