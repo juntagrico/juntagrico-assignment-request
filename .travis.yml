@@ -13,6 +13,7 @@ before_script:
 script:
   - coverage run ./manage.py test
 after_script:
+  - coverage xml
   - if [[ "$TRAVIS_PULL_REQUEST" == "false" ]]; then ./cc-test-reporter after-build --exit-code $TRAVIS_TEST_RESULT; fi
 env:
   global:
