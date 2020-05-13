@@ -1,10 +1,12 @@
 from datetime import date
 
 from django.contrib.auth.decorators import login_required, permission_required
+from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404
 
 from juntagrico.views import get_menu_dict as juntagrico_get_menu_dict
 
+from juntagrico_assignment_request.dao.assignmentrequestdao import AssignmentRequestDao
 from juntagrico_assignment_request.forms import AssignmentRequestForm, AssignmentResponseForm
 from juntagrico_assignment_request.mailer import membernotification, adminnotification
 from juntagrico_assignment_request.models import AssignmentRequest
@@ -34,11 +36,9 @@ def request_assignment(request, sent=False):
         adminnotification.request_created(assignment_request)
         return redirect('ar-assignment-requested')
 
-    assignment_requests = AssignmentRequest.objects.filter(member=member)
-
     renderdict = get_menu_dict(request)
     renderdict.update({
-        'assignment_requests': assignment_requests,
+        'assignment_requests': AssignmentRequestDao.current_requests_by_member(member),
         'form': assignment_request_form,
         'sent': sent
     })
@@ -82,16 +82,32 @@ def edit_request_assignment(request, request_id):
     return render(request, "assignment_request/edit_assignment_request.html", renderdict)
 
 
+def filter_approver(user):
+    if user.has_perm('juntagrico_assignment_request.notified_on_unapproved_assignments'):
+        return Q(approver=user.member) | Q(approver__isnull=True)
+    return Q(approver=user.member)
+
+
 @permission_required('juntagrico_assignment_request.can_confirm_assignments')
 def list_assignment_requests(request):
     """
     List assignment requests
     """
-
-    assignment_requests = AssignmentRequest.objects.all()
+    ar = AssignmentRequest.objects.filter(status=AssignmentRequest.REQUESTED).filter(filter_approver(request.user))
     renderdict = get_menu_dict(request)
     renderdict.update({
-        'assignment_requests': assignment_requests,
+        'assignment_requests': ar,
+    })
+    return render(request, "assignment_request/list_assignment_requests.html", renderdict)
+
+
+@permission_required('juntagrico_assignment_request.can_confirm_assignments')
+def list_archive(request):
+    ar = AssignmentRequest.objects.exclude(status=AssignmentRequest.REQUESTED).filter(filter_approver(request.user))
+    renderdict = get_menu_dict(request)
+    renderdict.update({
+        'assignment_requests': ar,
+        'archive': True
     })
     return render(request, "assignment_request/list_assignment_requests.html", renderdict)
 

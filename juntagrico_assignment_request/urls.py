@@ -13,6 +13,7 @@ urlpatterns = [
          name='ar-edit-assignment-request'),
     path('ar/assignment/list', assignment_request.list_assignment_requests,
          name='ar-list-assignment-requests'),
+    path('ar/assignment/archive', assignment_request.list_archive, name='ar-list-archive'),
     path('ar/assignment/respond/<int:request_id>/', assignment_request.respond_assignment_request,
          name='ar-respond-assignment-request'),
     path('ar/assignment/confirm/<int:request_id>/', assignment_request.confirm_assignment_request,

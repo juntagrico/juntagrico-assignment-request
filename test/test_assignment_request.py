@@ -53,6 +53,11 @@ class AssignmentRequestTests(AssignmentRequestTestCase):
         self.assertGet(reverse('ar-list-assignment-requests'), 302)  # normal member has no access
         self.assertGet(reverse('ar-list-assignment-requests'), member=self.approver)
 
+    def test_assignment_request_archive(self):
+        AssignmentRequest.objects.create(**self.assignment_request_data(self.approver))  # display at least one ar
+        self.assertGet(reverse('ar-list-archive'), 302)  # normal member has no access
+        self.assertGet(reverse('ar-list-archive'), member=self.approver)
+
     def test_assignment_confirmation(self):
         ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.approver))
         self.assertGet(reverse('ar-confirm-assignment-request', args=(ar.pk,)), 302)  # member can not approve
