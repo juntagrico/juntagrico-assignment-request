@@ -19,7 +19,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name='juntagrico_assignment_request',
-    version='0.1.0',
+    version='0.2.0dev',
     packages=find_packages(),
     include_package_data=True,
     license='LPGLv3',  # example license
