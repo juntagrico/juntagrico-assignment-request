@@ -8,9 +8,9 @@ class ManipulationTests(AssignmentRequestTestCase):
         self.ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.approver, approved=True))
 
     def test_job_type_manipulation(self):
-        self.ar.assignment.job.type.location = 'location2'
+        self.ar.assignment.job.type.activityarea = self.area2
         self.ar.save()
-        self.assertEqual(self.ar.assignment.job.type.location, 'location')
+        self.assertEqual(self.ar.assignment.job.type.activityarea, self.area)
 
     def test_job_manipulation(self):
         self.ar.assignment.job.multiplier = 2
