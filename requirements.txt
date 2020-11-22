@@ -1,3 +1,2 @@
-django
-juntagrico
-#git+https://github.com/juntagrico/juntagrico.git
+django==3.1.1
+juntagrico==1.2.4
