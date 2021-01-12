@@ -19,13 +19,13 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name='juntagrico_assignment_request',
-    version='0.3.0',
+    version='0.3.1',
     packages=find_packages(),
     include_package_data=True,
     license='LPGLv3',  # example license
     description='juntagrico_assignment_request',
     long_description=README,
-    url='http://juntagrico.org',
+    url='https://github.com/juntagrico/juntagrico-assignment-request',
     author='juntagrico',
     author_email='info@juntagrico.org',
     classifiers=[
