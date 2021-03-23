@@ -20,5 +20,5 @@ def request_handled(assignment_request):
         subject = _('Rückfrage zu deinem/r {}').format(Config.vocabulary('assignment'))
         content = get_template(AssignmentRequestConfig.emails('responded_assignment_request_mail')).render(d)
 
-    EmailSender.get_sender(Config.organisation_name()+' - '+subject, content,
+    EmailSender.get_sender(Config.organisation_name() + ' - ' + subject, content,
                            reply_to=[assignment_request.approver.email]).send_to(assignment_request.member.email)

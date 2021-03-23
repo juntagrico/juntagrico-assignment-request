@@ -1,6 +1,4 @@
-
-from django.forms import *
-
+from django.forms import ModelForm
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import gettext
 from django.urls import reverse
@@ -65,7 +63,6 @@ class AssignmentResponseForm(ModelForm):
                 Submit('confirm', _('Bestätigen'), css_class='btn-success'),
                 Submit('reject', _('Ablehnen'), css_class='btn-danger'),
                 Submit('submit', _('Nur Antwort senden'), css_class='btn-warning'),
-                HTML('<a href="' + reverse('ar-list-assignment-requests') +
-                     '" class="btn">' + gettext("Abbrechen") + '</a>'),
+                HTML('<a href="' + reverse('ar-list-assignment-requests') + '" class="btn">' + gettext("Abbrechen") + '</a>'),
             )
         )

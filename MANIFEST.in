@@ -3,3 +3,7 @@ include README.md
 recursive-include juntagrico_assignment_request/templates *
 include requirements.txt
 global-exclude *.pyc
+exclude manage.py
+exclude testsettings*.py
+exclude testurls*.py
+recursive-exclude test *

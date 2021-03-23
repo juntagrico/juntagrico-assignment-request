@@ -1,6 +1,7 @@
 from django.db.models import signals
+from juntagrico.entity.jobs import JobType, Assignment, RecuringJob
 
-from juntagrico_assignment_request.entity.assignment_request import *
+from juntagrico_assignment_request.entity.assignment_request import AssignmentRequest
 
 signals.pre_save.connect(AssignmentRequest.pre_save, sender=AssignmentRequest)
 

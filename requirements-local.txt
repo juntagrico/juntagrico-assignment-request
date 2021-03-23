@@ -1,1 +1,4 @@
 git+http://github.com/juntagrico/juntagrico.git
+flake8
+coverage
+django_coverage_plugin
