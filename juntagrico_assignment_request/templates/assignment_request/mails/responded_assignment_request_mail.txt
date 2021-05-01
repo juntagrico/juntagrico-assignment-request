@@ -1,5 +1,5 @@
 {% extends "mails/email.txt" %}
-{% load config %}
+{% load juntagrico.config %}
 {% block content %}
 Soeben hat {{ assignment_request.approver }} eine Rückfrage auf deine Anfrage verfasst:
 "{{ assignment_request.response }}"

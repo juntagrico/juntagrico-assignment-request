@@ -1,4 +1,4 @@
-git+http://github.com/juntagrico/juntagrico.git
+git+https://github.com/juntagrico/juntagrico.git@release_1.4
 flake8
 coverage
 django_coverage_plugin

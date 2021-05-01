@@ -1,5 +1,5 @@
 {% extends "mails/email.txt" %}
-{% load config %}
+{% load juntagrico.config %}
 {% block content %}
 Soeben hat {{ assignment_request.member }} {{ assignment_request.amount }} Böhnli mit folgender Mitteilung beantragt:
 "{{ assignment_request.description }}"

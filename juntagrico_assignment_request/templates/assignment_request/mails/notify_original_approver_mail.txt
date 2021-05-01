@@ -1,5 +1,5 @@
 {% extends "mails/email.txt" %}
-{% load config %}
+{% load juntagrico.config %}
 {% block content %}
 Soeben hat {{ new_approver }} die Böhnli-Anfrage von {{ assignment_request.member }} beantwortet und dir die Arbeit abgenommen.
 {% if assignment_request.response %}

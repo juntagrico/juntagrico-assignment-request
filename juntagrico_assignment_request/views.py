@@ -3,8 +3,7 @@ from datetime import date
 from django.contrib.auth.decorators import login_required, permission_required
 from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404
-
-from juntagrico.views import get_menu_dict as juntagrico_get_menu_dict
+from juntagrico.view_decorators import highlighted_menu
 
 from juntagrico_assignment_request.dao.assignmentrequestdao import AssignmentRequestDao
 from juntagrico_assignment_request.forms import AssignmentRequestForm, AssignmentResponseForm
@@ -12,15 +11,8 @@ from juntagrico_assignment_request.mailer import membernotification, adminnotifi
 from juntagrico_assignment_request.models import AssignmentRequest
 
 
-def get_menu_dict(request):
-    if request.user.is_authenticated and hasattr(request.user, "member"):
-        renderdict = juntagrico_get_menu_dict(request)
-        renderdict.update({'menu': {'request_assignment': 'active'}, })
-        return renderdict
-    return {}
-
-
 @login_required
+@highlighted_menu('request_assignment')
 def request_assignment(request, sent=False):
     """
     Request an assignment
@@ -36,12 +28,11 @@ def request_assignment(request, sent=False):
         adminnotification.request_created(assignment_request)
         return redirect('ar-assignment-requested')
 
-    renderdict = get_menu_dict(request)
-    renderdict.update({
+    renderdict = {
         'assignment_requests': AssignmentRequestDao.current_requests_by_member(member),
         'form': assignment_request_form,
         'sent': sent
-    })
+    }
     return render(request, "assignment_request/request_assignment.html", renderdict)
 
 
@@ -59,6 +50,7 @@ def delete_request_assignment(request, request_id):
 
 
 @login_required
+@highlighted_menu('request_assignment')
 def edit_request_assignment(request, request_id):
     """
     Edit and assignment request
@@ -75,10 +67,9 @@ def edit_request_assignment(request, request_id):
         adminnotification.request_changed(assignment_request)
         return redirect('ar-assignment-requested')
 
-    renderdict = get_menu_dict(request)
-    renderdict.update({
+    renderdict = {
         'form': assignment_request_form,
-    })
+    }
     return render(request, "assignment_request/edit_assignment_request.html", renderdict)
 
 
@@ -94,21 +85,19 @@ def list_assignment_requests(request):
     List assignment requests
     """
     ar = AssignmentRequest.objects.filter(status=AssignmentRequest.REQUESTED).filter(filter_approver(request.user))
-    renderdict = get_menu_dict(request)
-    renderdict.update({
+    renderdict = {
         'assignment_requests': ar,
-    })
+    }
     return render(request, "assignment_request/list_assignment_requests.html", renderdict)
 
 
 @permission_required('juntagrico_assignment_request.can_confirm_assignments')
 def list_archive(request):
     ar = AssignmentRequest.objects.exclude(status=AssignmentRequest.REQUESTED).filter(filter_approver(request.user))
-    renderdict = get_menu_dict(request)
-    renderdict.update({
+    renderdict = {
         'assignment_requests': ar,
         'archive': True
-    })
+    }
     return render(request, "assignment_request/list_assignment_requests.html", renderdict)
 
 
@@ -133,11 +122,10 @@ def respond_assignment_request(request, request_id):
         membernotification.request_handled(assignment_request)
         return redirect('ar-list-assignment-requests')
 
-    renderdict = get_menu_dict(request)
-    renderdict.update({
+    renderdict = {
         'assignment_request': assignment_request,
         'form': assignment_response_form,
-    })
+    }
     return render(request, "assignment_request/respond_assignment_request.html", renderdict)
 
 

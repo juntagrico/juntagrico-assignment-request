@@ -1,5 +1,5 @@
 {% extends "mails/email.txt" %}
-{% load config %}
+{% load juntagrico.config %}
 {% block content %}
 Soeben hat {{ assignment_request.approver }} deine Anfrage mit folgender Begründung abgelehnt:
 "{{ assignment_request.response }}"
