@@ -14,13 +14,13 @@ addons.config.register_version(juntagrico_assignment_request.name, juntagrico_as
 # in admin by monkey patching
 
 def get_job_type_queryset(self, request):
-    return original_get_job_type_queryset(self, request).filter(
-        recuringjob__assignment__assignmentrequest__isnull=True).distinct()
+    return original_get_job_type_queryset(self, request).exclude(
+        recuringjob__assignment__assignmentrequest__isnull=False)
 
 
 def get_job_queryset(self, request):
-    return original_get_job_queryset(self, request).filter(
-        assignment__assignmentrequest__isnull=True).distinct()
+    return original_get_job_queryset(self, request).exclude(
+        assignment__assignmentrequest__isnull=False)
 
 
 original_get_job_type_queryset = JobTypeAdmin.get_queryset
