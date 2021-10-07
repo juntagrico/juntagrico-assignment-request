@@ -48,3 +48,9 @@ If members don't select any confirmer all users with the following permission wi
 The extension creates job types and jobs on the fly behind the scenes as they are needed to create the assignments and show them to the member that made them.
 In order to not clutter the admin views with automatically generated content, these jobs and job types are hidden.
 As a side effect there will be assignments that have a valid job link, but when you follow that job, you will be told that no job with the given id exists.
+
+## Release Notes
+
+### 1.4.1
+
+* Fix error when deleting selected jobs in the django admin
