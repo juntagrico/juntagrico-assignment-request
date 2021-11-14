@@ -32,7 +32,7 @@ class AssignmentRequest(models.Model):
     assignment = models.OneToOneField(Assignment, verbose_name=Config.vocabulary('assignment'),
                                       blank=True, null=True, on_delete=models.PROTECT)
     amount = models.PositiveIntegerField(_('Wert'), default=1, validators=[MinValueValidator(1)],
-                                         help_text=_("Wieviele Böhnli?"))
+                                         help_text=_("Wieviele " + Config.vocabulary('assignment_pl') + "?"))
     job_time = models.DateTimeField(_('Geleistet am'), default=datetime.now)
     request_date = models.DateField(_('Beantragt am'), default=date.today, blank=True, null=True)
     response_date = models.DateField(_('Beantwortet am'), blank=True, null=True,
@@ -43,7 +43,7 @@ class AssignmentRequest(models.Model):
                                              "dich aufgefordert, die Anfrage zu senden?"))
 
     description = models.TextField(_('Beschreibung'), max_length=1000, default='',
-                                   help_text=_("Kurze beschreibung was du gemacht hat"))
+                                   help_text=_("Kurze Beschreibung was du gemacht hat"))
     activityarea = models.ForeignKey(ActivityArea, verbose_name=_('Tätigkeitsbereich'),
                                      blank=True, null=True, on_delete=models.SET_NULL,
                                      help_text=_("Was am besten passt. Ansonsten leer lassen"))
@@ -52,9 +52,9 @@ class AssignmentRequest(models.Model):
                                 help_text=_("Optional"))
 
     status = models.CharField(max_length=2, choices=REQUEST_STATUS, default=REQUESTED,
-                              help_text=_('Hier "Bestätigt" auswählen, sonst zählt das Böhnli nicht!'))
+                              help_text=_('Hier "Bestätigt" auswählen, um die Anfrage anzunehmen'))
     response = models.TextField(_('Antwort'), blank=True, null=True,
-                                help_text=_("Rückmeldung an Böhnli-beantrager. Kann leer bleiben."))
+                                help_text=_("Rückmeldung an " + Config.vocabulary('member') + ". Kann leer bleiben."))
 
     def __str__(self):
         return _('%s Anfrage #%s') % (Config.vocabulary('assignment'), self.id)

@@ -15,7 +15,7 @@ def content_render(assignment_request, template, **kwargs):
 
 
 def request_created(assignment_request):
-    EmailSender.get_sender(Config.organisation_name() + ' - Neue Böhnli-Anfrage',
+    EmailSender.get_sender(Config.organisation_name() + ' - Neue ' + Config.vocabulary('assignment') + '-Anfrage',
                            content_render(assignment_request, 'new_assignment_request_mail'))\
         .send_to(get_approver_emails(assignment_request))
 
@@ -25,13 +25,13 @@ def request_handled_by_other_approver(assignment_request, new_approver):
     notify original approver, if another approver handled the request
     """
     if assignment_request.approver and assignment_request.approver != new_approver:
-        EmailSender.get_sender(Config.organisation_name() + ' - Böhnli-Anfrage erledigt',
+        EmailSender.get_sender(Config.organisation_name() + ' - ' + Config.vocabulary('assignment') + '-Anfrage erledigt',
                                content_render(assignment_request, 'notify_original_approver_mail',
                                               new_approver=new_approver))\
             .send_to(get_approver_emails(assignment_request))
 
 
 def request_changed(assignment_request):
-    EmailSender.get_sender(Config.organisation_name() + ' - Böhnli-Anfrage bearbeitet',
+    EmailSender.get_sender(Config.organisation_name() + ' - ' + Config.vocabulary('assignment') + '-Anfrage bearbeitet',
                            content_render(assignment_request, 'edited_assignment_request_mail'))\
         .send_to(get_approver_emails(assignment_request))
