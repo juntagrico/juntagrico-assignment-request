@@ -1,7 +1,9 @@
 {% extends "mails/email.txt" %}
 {% load juntagrico.config %}
 {% block content %}
-Soeben hat {{ new_approver }} die Böhnli-Anfrage von {{ assignment_request.member }} beantwortet und dir die Arbeit abgenommen.
+  {% vocabulary "assignment" as v_assignment %}
+  {% vocabulary "assignment_pl" as v_assignment_pl %}
+Soeben hat {{ new_approver }} die {{ v_assignment }}-Anfrage von {{ assignment_request.member }} beantwortet und dir die Arbeit abgenommen.
 {% if assignment_request.response %}
 Entscheidung: {{ assignment_request.get_status_display }}
 Antwort: "{{ assignment_request.response }}"{% endif %}
