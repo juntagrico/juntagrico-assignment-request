@@ -30,9 +30,9 @@ class AssignmentRequest(models.Model):
     member = models.ForeignKey(Member, verbose_name=Config.vocabulary('member'), on_delete=models.CASCADE,
                                help_text=_("Beantragt von"))
     assignment = models.OneToOneField(Assignment, verbose_name=Config.vocabulary('assignment'),
-                                      blank=True, null=True, on_delete=models.PROTECT)               
+                                      blank=True, null=True, on_delete=models.PROTECT)
     amount = models.PositiveIntegerField(_('Wert'), default=1, validators=[MinValueValidator(1)],
-                                         help_text=_("Wieviele "+Config.vocabulary('assignment_pl')+"?"))
+                                         help_text=_("Wieviele " + Config.vocabulary('assignment_pl') + "?"))
     job_time = models.DateTimeField(_('Geleistet am'), default=datetime.now)
     request_date = models.DateField(_('Beantragt am'), default=date.today, blank=True, null=True)
     response_date = models.DateField(_('Beantwortet am'), blank=True, null=True,
@@ -52,9 +52,9 @@ class AssignmentRequest(models.Model):
                                 help_text=_("Optional"))
 
     status = models.CharField(max_length=2, choices=REQUEST_STATUS, default=REQUESTED,
-                              help_text=_('Hier "Bestätigt" auswählen, sonst zählt das/der '+Config.vocabulary('assignment')+' nicht!'))
+                              help_text=_('Hier "Bestätigt" auswählen, sonst zählt das/der ' + Config.vocabulary('assignment') + ' nicht!'))
     response = models.TextField(_('Antwort'), blank=True, null=True,
-                                help_text=_("Rückmeldung an "+Config.vocabulary('assignment')+"-Beantrager. Kann leer bleiben."))
+                                help_text=_("Rückmeldung an " + Config.vocabulary('assignment') + "-Beantrager. Kann leer bleiben."))
 
     def __str__(self):
         return _('%s Anfrage #%s') % (Config.vocabulary('assignment'), self.id)
