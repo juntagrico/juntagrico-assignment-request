@@ -52,7 +52,7 @@ class AssignmentRequest(models.Model):
                                 help_text=_("Optional"))
 
     status = models.CharField(max_length=2, choices=REQUEST_STATUS, default=REQUESTED,
-                              help_text=_('Hier "Bestätigt" auswählen, sonst zählt das/der ' + Config.vocabulary('assignment') + ' nicht!'))
+                              help_text=_('Hier "Bestätigt" auswählen, um die Anfrage anzunehmen'))
     response = models.TextField(_('Antwort'), blank=True, null=True,
                                 help_text=_("Rückmeldung an " + Config.vocabulary('assignment') + "-Beantrager. Kann leer bleiben."))
 
