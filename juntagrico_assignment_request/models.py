@@ -1,5 +1,6 @@
 from django.db.models import signals
 from juntagrico.entity.jobs import JobType, Assignment, RecuringJob
+from juntagrico.config import Config
 
 from juntagrico_assignment_request.entity.assignment_request import AssignmentRequest
 
@@ -41,7 +42,11 @@ def pre_save_assignment(sender, instance, **kwds):
     if hasattr(instance, 'assignmentrequest'):
         ar = instance.assignmentrequest
         instance.member = ar.member
-        instance.amount = ar.amount
+        if Config.assignment_unit() == 'ENTITY':
+            instance.amount = ar.amount
+        elif Config.assignment_unit() == 'HOURS':
+            instance.amount = ar.amount * ar.duration
+        
         instance.job = ar.get_matching_job()
         print(f'restored {instance} using {ar}')
 

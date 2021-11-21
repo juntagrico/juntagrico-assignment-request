@@ -31,8 +31,14 @@ class AssignmentRequest(models.Model):
                                help_text=_("Beantragt von"))
     assignment = models.OneToOneField(Assignment, verbose_name=Config.vocabulary('assignment'),
                                       blank=True, null=True, on_delete=models.PROTECT)
-    amount = models.PositiveIntegerField(_('Wert'), default=1, validators=[MinValueValidator(1)],
+                                      
+    if Config.assignment_unit() == 'ENTITY':
+            amount = models.PositiveIntegerField(_('Wert'), default=1, validators=[MinValueValidator(1)],
                                          help_text=_("Wieviele " + Config.vocabulary('assignment_pl') + "?"))
+    elif Config.assignment_unit() == 'HOURS':
+            amount = models.PositiveIntegerField(_('Wert'), default=1, validators=[MinValueValidator(1)],
+                                         help_text=_("Wieviele " + Config.vocabulary('assignment_pl') + "? Dieser Wert gilt als Multiplikator für die 'Dauer in Stunden'."))                                     
+    
     job_time = models.DateTimeField(_('Geleistet am'), default=datetime.now)
     request_date = models.DateField(_('Beantragt am'), default=date.today, blank=True, null=True)
     response_date = models.DateField(_('Beantwortet am'), blank=True, null=True,
@@ -47,7 +53,7 @@ class AssignmentRequest(models.Model):
     activityarea = models.ForeignKey(ActivityArea, verbose_name=_('Tätigkeitsbereich'),
                                      blank=True, null=True, on_delete=models.SET_NULL,
                                      help_text=_("Was am besten passt. Ansonsten leer lassen"))
-    duration = models.PositiveIntegerField(_('Dauer in Stunden'), default=4)
+    duration = models.DecimalField(_('Dauer in Stunden'), max_digits=4, decimal_places=2, default=4.0)
     location = models.CharField(_('Ort'), max_length=100, blank=True, default='',
                                 help_text=_("Optional"))
 
@@ -125,8 +131,18 @@ class AssignmentRequest(models.Model):
     @classmethod
     def _create_or_update_assignment(cls, instance):
         instance.set_activityarea_if_none()
+        
+        # use ASSIGNMENT_UNIT from config to create/update the assignment
+        if Config.assignment_unit() == 'ENTITY':
+            amount_override=instance.amount
+        elif Config.assignment_unit() == 'HOURS':
+            amount_override=instance.amount * instance.duration
+        
         # assignment
         if instance.assignment:
+            # override amount depending on ASSIGNMENT_UNIT
+            instance.assignment.amount=amount_override
+            
             # update if exists:
             # saving the assignment will automatically restore its content. If old job is empty after that, remove it.
             cls._remove_job(instance.assignment.job, instance.assignment.save)
@@ -138,7 +154,7 @@ class AssignmentRequest(models.Model):
                 matching_job.slots += 1 - matching_job.free_slots
                 matching_job.save()
             instance.assignment = Assignment.objects.create(member=instance.member,
-                                                            job=matching_job, amount=instance.amount)
+                                                            job=matching_job, amount=amount_override)
 
     @classmethod
     def _remove_assignment(cls, assignment):
