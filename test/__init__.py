@@ -8,6 +8,7 @@ from juntagrico_assignment_request.entity.assignment_request import AssignmentRe
 
 
 @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
+@override_settings(ASSIGNMENT_UNIT='ENTITY')
 class AssignmentRequestTestCase(TestCase):
     def setUp(self):
         self.set_up_member()
