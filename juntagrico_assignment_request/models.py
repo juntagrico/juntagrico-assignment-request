@@ -42,11 +42,7 @@ def pre_save_assignment(sender, instance, **kwds):
     if hasattr(instance, 'assignmentrequest'):
         ar = instance.assignmentrequest
         instance.member = ar.member
-        if Config.assignment_unit() == 'ENTITY':
-            instance.amount = ar.amount
-        elif Config.assignment_unit() == 'HOURS':
-            instance.amount = ar.amount * ar.duration
-        
+        instance.amount = ar.get_amount()
         instance.job = ar.get_matching_job()
         print(f'restored {instance} using {ar}')
 
