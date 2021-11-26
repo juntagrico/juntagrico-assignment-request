@@ -1,6 +1,5 @@
 from django.db.models import signals
 from juntagrico.entity.jobs import JobType, Assignment, RecuringJob
-from juntagrico.config import Config
 
 from juntagrico_assignment_request.entity.assignment_request import AssignmentRequest
 
