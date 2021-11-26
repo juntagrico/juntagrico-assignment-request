@@ -33,7 +33,7 @@ Only the selected confirmer, will be informed about the request by email and can
 
 If members don't select any confirmer all users with the following permission will receive a notification and can see the request: `juntagrico_assignment_request | Arbeitseinsatz Anfrage | Wird über nicht abgesprochene Arbeitseinsätze informiert`
 
-The juntagrico setting ASSIGNMENT_UNIT defines if the ENTITY or HOURS are used to create an assignment (https://juntagrico.readthedocs.io/en/latest/settings.html?highlight=ASSIGNMENT_UNIT#assignment-unit).
+The [ASSIGNMENT_UNIT](https://juntagrico.readthedocs.io/en/latest/settings.html?highlight=ASSIGNMENT_UNIT#assignment-unit) setting is respected.
 
 ## Usage
 
