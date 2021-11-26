@@ -143,7 +143,8 @@ class AssignmentRequest(models.Model):
         if instance.assignment:
             # update if exists:
             # saving the assignment will automatically restore its content. If old job is empty after that, remove it.
-            cls._remove_job(instance.assignment.job, instance.assignment.save)
+            instance.assignment.save()
+            cls._remove_job(instance.assignment.job)
 
         else:
             # create new if does not exist
@@ -157,13 +158,13 @@ class AssignmentRequest(models.Model):
     @classmethod
     def _remove_assignment(cls, assignment):
         # Delete assignment and job
-        cls._remove_job(assignment.job, assignment.delete)
+        assignment.delete()
+        cls._remove_job(assignment.job)
 
     @classmethod
-    def _remove_job(cls, job, before_delete):
+    def _remove_job(cls, job):
         # Delete job, if it has no other assignments
         # the job type is not deleted
-        before_delete()
         if job.occupied_places() == 0:
             job.delete()
         elif job.free_slots > 0:  # if job stays, remove emptied slot
