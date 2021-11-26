@@ -138,7 +138,7 @@ class AssignmentRequest(models.Model):
     @classmethod
     def _create_or_update_assignment(cls, instance):
         instance.set_activityarea_if_none()
-        
+
         # assignment
         if instance.assignment:
             # update if exists:
