@@ -120,6 +120,7 @@ class AssignmentRequestTestCase(TestCase):
             'response': 'response',
             decision: True,
             'amount': 2,
+            'duration': 5,
             'activityarea': self.area.pk,
             'location': 'location'
         }

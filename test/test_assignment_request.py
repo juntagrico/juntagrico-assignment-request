@@ -66,8 +66,16 @@ class AssignmentRequestTests(AssignmentRequestTestCase):
         self.assertGet(reverse('ar-confirm-assignment-request', args=(ar.pk,)), 302, member=self.approver)
         ar.refresh_from_db()
         self.assertEqual(ar.status, AssignmentRequest.CONFIRMED)
+        self.assertEqual(ar.assignment.amount, ar.get_amount())
         self.assertEqual(len(mail.outbox), 1)  # confirmation email to user
         self.assertEqual(mail.outbox[0].to[0], self.member.email)
+
+    def test_edit_approved_assignment_of_request(self):
+        ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.approver, approved=True))
+        # make sure that amount is restored correctly
+        ar.assignment.amount = 20
+        ar.save()
+        self.assertEqual(ar.assignment.amount, ar.get_amount())
 
     def test_assignment_confirmation_with_response_by_other_approver(self):
         ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.approver))
@@ -77,6 +85,7 @@ class AssignmentRequestTests(AssignmentRequestTestCase):
         ar.refresh_from_db()
         self.assertEqual(ar.status, AssignmentRequest.CONFIRMED)
         self.assertEqual(ar.approver, self.approver2)  # approver changed to actual approver
+        self.assertEqual(ar.assignment.amount, ar.get_amount())
         self.assertEqual(len(mail.outbox), 2)  # rejection email to user and information to original approver
         self.assertEqual(mail.outbox[0].to[0], self.approver.email)
         self.assertEqual(mail.outbox[1].to[0], self.member.email)

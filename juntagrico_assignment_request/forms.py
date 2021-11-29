@@ -14,10 +14,10 @@ from crispy_forms.bootstrap import FormActions
 class AssignmentRequestForm(ModelForm):
     class Meta:
         model = AssignmentRequest
-        fields = ('job_time', 'duration', 'amount', 'approver',
+        fields = ('job_time', 'amount', 'duration', 'approver',
                   'activityarea', 'location', 'description')
         labels = {
-            "amount": _("Anzahl"),
+            "amount": _("Anzahl Einsätze"),
             "approver": _("Abgesprochen mit"),
             "activityarea": _("Tätigkeitsbereich"),
         }
@@ -33,7 +33,7 @@ class AssignmentRequestForm(ModelForm):
         self.helper.label_class = 'col-md-3'
         self.helper.field_class = 'col-md-9'
         self.helper.layout = Layout(
-            'job_time', 'duration', 'amount', 'approver',
+            'job_time', 'amount', 'duration', 'approver',
             'activityarea', 'location', 'description',
             FormActions(
                 Submit('submit', _('Absenden'), css_class='btn-success'),
@@ -44,9 +44,9 @@ class AssignmentRequestForm(ModelForm):
 class AssignmentResponseForm(ModelForm):
     class Meta:
         model = AssignmentRequest
-        fields = ('amount', 'activityarea', 'location', 'response')
+        fields = ('amount', 'duration', 'activityarea', 'location', 'response')
         labels = {
-            "amount": _("Anzahl"),
+            "amount": _("Anzahl Einsätze"),
             "activityarea": _("Tätigkeitsbereich"),
         }
 
@@ -58,7 +58,7 @@ class AssignmentResponseForm(ModelForm):
         self.helper.label_class = 'col-md-3'
         self.helper.field_class = 'col-md-9'
         self.helper.layout = Layout(
-            'amount', 'activityarea', 'location', 'response',
+            'amount', 'duration', 'activityarea', 'location', 'response',
             FormActions(
                 Submit('confirm', _('Bestätigen'), css_class='btn-success'),
                 Submit('reject', _('Ablehnen'), css_class='btn-danger'),

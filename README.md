@@ -33,6 +33,8 @@ Only the selected confirmer, will be informed about the request by email and can
 
 If members don't select any confirmer all users with the following permission will receive a notification and can see the request: `juntagrico_assignment_request | Arbeitseinsatz Anfrage | Wird über nicht abgesprochene Arbeitseinsätze informiert`
 
+The [ASSIGNMENT_UNIT](https://juntagrico.readthedocs.io/en/latest/settings.html?highlight=ASSIGNMENT_UNIT#assignment-unit) setting is respected.
+
 ## Usage
 
 1. Members will see a new entry in the menu to request assignments

@@ -41,7 +41,7 @@ def pre_save_assignment(sender, instance, **kwds):
     if hasattr(instance, 'assignmentrequest'):
         ar = instance.assignmentrequest
         instance.member = ar.member
-        instance.amount = ar.amount
+        instance.amount = ar.get_amount()
         instance.job = ar.get_matching_job()
         print(f'restored {instance} using {ar}')
 
