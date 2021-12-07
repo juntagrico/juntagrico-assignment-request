@@ -53,6 +53,15 @@ As a side effect there will be assignments that have a valid job link, but when 
 
 ## Release Notes
 
+## 1.4
+
+Upgrade to Juntagrico 1.4
+
 ### 1.4.1
 
 * Fix error when deleting selected jobs in the django admin
+
+### 1.4.2
+
+* Consistently use vocabulary for the word "assignment(s)"
+* Support for assignment unit HOURS
