@@ -165,7 +165,7 @@ class AssignmentRequest(models.Model):
     def _remove_job(cls, job):
         # Delete job, if it has no other assignments
         # the job type is not deleted
-        if job.occupied_places() == 0:
+        if job.occupied_slots == 0:
             job.delete()
         elif job.free_slots > 0:  # if job stays, remove emptied slot
             job.slots -= 1
