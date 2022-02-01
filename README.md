@@ -65,3 +65,7 @@ Upgrade to Juntagrico 1.4
 
 * Consistently use vocabulary for the word "assignment(s)"
 * Support for assignment unit HOURS
+
+### 1.4.3
+
+* Compatibility to juntagrico>=1.4.6
