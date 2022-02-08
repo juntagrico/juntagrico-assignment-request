@@ -53,6 +53,10 @@ As a side effect there will be assignments that have a valid job link, but when 
 
 ## Release Notes
 
+## 1.5
+
+Upgrade to Juntagrico 1.5
+
 ## 1.4
 
 Upgrade to Juntagrico 1.4
