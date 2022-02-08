@@ -24,6 +24,6 @@ class AssignmentRequestDao:
 
     @staticmethod
     def current_requests_by_member(member):
-        start = gdtz().localize(datetime.combine(start_of_business_year(), time.min))
+        start = datetime.combine(start_of_business_year(), time.min, tzinfo=gdtz())
         return AssignmentRequest.objects.filter(member=member).\
             filter(Q(status=AssignmentRequest.REQUESTED) | Q(job_time__gte=start))

@@ -4,6 +4,7 @@ import time
 from django.db import models
 from django.utils.translation import gettext as _
 from django.core.validators import MinValueValidator
+from juntagrico.entity.location import Location
 
 from juntagrico.entity.member import Member
 from juntagrico.entity.jobs import Assignment, ActivityArea, JobType, RecuringJob
@@ -118,11 +119,12 @@ class AssignmentRequest(models.Model):
         if job_type:
             return job_type[0]
         # create job type if not exists
+        location = Location.objects.get_or_create(name=_('Selbständig'), defaults={'visible': False})[0]
         return JobType.objects.create(
             name=f'{self.JOB_NAME_PREFIX}{self.activityarea.id}_{int(time.time())}',  # generate unique job name.
             **values,
             visible=False,
-            location='-',  # does not really matter
+            location=location,
             default_duration=1,  # overridden in job anyways
             displayed_name=_('Selbständiger Einsatz'),
             description=_('Dies ist ein automatisch erzeugter Einsatz.'),

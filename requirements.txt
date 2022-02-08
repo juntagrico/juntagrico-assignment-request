@@ -1,1 +1,1 @@
-juntagrico~=1.4.6
+juntagrico~=1.5.0
