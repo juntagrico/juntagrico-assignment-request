@@ -21,7 +21,8 @@ It allows members to request assignments for jobs they have done, that were not 
 
 1. Add `juntagrico-assignment-request` to your `requirements.txt`
 2. Add `'juntagrico_assignment_request',` to the `INSTALLED_APPS` in your `settings.py`
-3. Add `path(r'', include('juntagrico_assignment_request.urls')),` at the end of your `urls.py`
+3. Add `re_path(r'', include('juntagrico_assignment_request.urls')),` at the end of your `urls.py`
+4. Apply migrations with `python manage.py migrate`
 4. Redeploy your project
 
 ## Configuration
@@ -73,3 +74,30 @@ Upgrade to Juntagrico 1.4
 ### 1.4.3
 
 * Compatibility to juntagrico>=1.4.6
+
+## Screenshots
+
+New menu entry
+
+![New menu entry](doc/01_menu_entry.png)
+
+Request Form
+
+![Request Form](doc/02_request_form)
+
+Overview about reported assignments
+
+![Overview](doc/03_overview.png)
+
+Form to accept/deny the request
+
+![Accept/Deny Form](doc/04_accept_deny.png)
+
+Confirmation by mail for the requester
+
+![Mail Confirmation](doc/05_mail_confirmation.png)
+
+The assignment appears in the list
+
+![New menu entry](doc/06_assignment_list.png)
+
