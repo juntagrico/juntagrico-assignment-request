@@ -9,10 +9,10 @@ class AssignmentRequestConfig:
         if hasattr(settings, 'EMAILS') and key in settings.EMAILS:
             return settings.EMAILS[key]
         return {
-            'new_assignment_request_mail': 'assignment_request/mails/new_assignment_request_mail.txt',
-            'edited_assignment_request_mail': 'assignment_request/mails/edited_assignment_request_mail.txt',
-            'responded_assignment_request_mail': 'assignment_request/mails/responded_assignment_request_mail.txt',
-            'confirmed_assignment_request_mail': 'assignment_request/mails/confirmed_assignment_request_mail.txt',
-            'rejected_assignment_request_mail': 'assignment_request/mails/rejected_assignment_request_mail.txt',
-            'notify_original_approver_mail': 'assignment_request/mails/notify_original_approver_mail.txt',
+            'new_assignment_request_mail': 'assignment_request/mails/admin/new.txt',
+            'edited_assignment_request_mail': 'assignment_request/mails/admin/edited.txt',
+            'responded_assignment_request_mail': 'assignment_request/mails/member/responded.txt',
+            'confirmed_assignment_request_mail': 'assignment_request/mails/member/confirmed.txt',
+            'rejected_assignment_request_mail': 'assignment_request/mails/member/rejected.txt',
+            'notify_original_approver_mail': 'assignment_request/mails/admin/notify_original_approver.txt',
         }[key]

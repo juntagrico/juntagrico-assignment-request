@@ -7,7 +7,7 @@ Soeben hat {{ assignment_request.member }} die {{ v_assignment }}-Anfrage bearbe
 "{{ assignment_request.description }}"
 
     Anzahl: {{ assignment_request.amount }}
-{% include "assignment_request/mails/snippets/assignment_request_summary.txt" %}
+{% include "assignment_request/mails/snippets/summary.txt" %}
 
 {% if assignment_request.approver %}
 Laut {{ assignment_request.member }} wurde das mit dir abgesprochen.

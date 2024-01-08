@@ -32,7 +32,7 @@ def request_assignment(request, sent=False):
         'form': assignment_request_form,
         'sent': sent
     }
-    return render(request, "assignment_request/request_assignment.html", renderdict)
+    return render(request, "assignment_request/request.html", renderdict)
 
 
 @login_required
@@ -69,7 +69,7 @@ def edit_request_assignment(request, request_id):
     renderdict = {
         'form': assignment_request_form,
     }
-    return render(request, "assignment_request/edit_assignment_request.html", renderdict)
+    return render(request, "assignment_request/edit.html", renderdict)
 
 
 def filter_approver(user):
@@ -87,7 +87,7 @@ def list_assignment_requests(request):
     renderdict = {
         'assignment_requests': ar,
     }
-    return render(request, "assignment_request/list_assignment_requests.html", renderdict)
+    return render(request, "assignment_request/list.html", renderdict)
 
 
 @permission_required('juntagrico_assignment_request.can_confirm_assignments')
@@ -97,7 +97,7 @@ def list_archive(request):
         'assignment_requests': ar,
         'archive': True
     }
-    return render(request, "assignment_request/list_assignment_requests.html", renderdict)
+    return render(request, "assignment_request/list.html", renderdict)
 
 
 @permission_required('juntagrico_assignment_request.can_confirm_assignments')
@@ -125,7 +125,7 @@ def respond_assignment_request(request, request_id):
         'assignment_request': assignment_request,
         'form': assignment_response_form,
     }
-    return render(request, "assignment_request/respond_assignment_request.html", renderdict)
+    return render(request, "assignment_request/respond.html", renderdict)
 
 
 @permission_required('juntagrico_assignment_request.can_confirm_assignments')

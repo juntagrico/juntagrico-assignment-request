@@ -8,7 +8,7 @@ Antwort: "{{ assignment_request.response }}"
 
 Es geht um folgende/n/s {% vocabulary 'assignment' %}:
     {{ serverurl }}{% url 'job' assignment_request.assignment.job.id %}
-{% include "assignment_request/mails/snippets/assignment_request_summary.txt" %}
+{% include "assignment_request/mails/snippets/summary.txt" %}
 {% if assignment_request.description %}
 Du hattest bei der Anfrage folgende Mitteilung hinterlassen:
 "{{ assignment_request.description }}"
