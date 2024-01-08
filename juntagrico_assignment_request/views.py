@@ -1,7 +1,10 @@
 from datetime import date
 
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.shortcuts import render, redirect, get_object_or_404
+from django.utils.translation import gettext as _
+
 from juntagrico.view_decorators import highlighted_menu
 
 from juntagrico_assignment_request.forms import AssignmentRequestForm, AssignmentResponseForm
@@ -11,10 +14,16 @@ from juntagrico_assignment_request.models import AssignmentRequest
 
 @login_required
 @highlighted_menu('request_assignment')
-def request_assignment(request, sent=False):
+def request_assignment(request, text_override=None):
     """
     Request an assignment
     """
+
+    text = dict(
+        request_sent=_("Deine Anfrage wurde erfolgreich verschickt.<br>"
+                       "Du wirst per E-Mail benachrichtigt, sobald diese bestätigt wurde.")
+    )
+    text.update(text_override or {})
 
     member = request.user.member
     assignment_request_form = AssignmentRequestForm(request.POST or None)
@@ -24,12 +33,13 @@ def request_assignment(request, sent=False):
         assignment_request.member = member
         assignment_request.save()
         adminnotification.request_created(assignment_request)
-        return redirect('juntagrico-assignment-request:requested')
+        messages.success(request, text['request_sent'])
+        # do a redirect to avoid resending on reloading
+        return redirect('juntagrico-assignment-request:request')
 
     renderdict = {
         'assignment_requests': AssignmentRequest.objects.filter(member=member).pending(),
         'form': assignment_request_form,
-        'sent': sent
     }
     return render(request, "assignment_request/request.html", renderdict)
 
@@ -49,21 +59,38 @@ def delete_request_assignment(request, request_id):
 
 @login_required
 @highlighted_menu('request_assignment')
-def edit_request_assignment(request, request_id):
+def edit_request_assignment(request, request_id, text_override=None):
     """
     Edit and assignment request
     """
 
+    text = dict(
+        changed=_("Deine Änderungen wurden gespeichert."),
+        rerequested=_("Deine Änderungen wurden gespeichert und zur (erneuten) Bestätigung verschickt.")
+    )
+    text.update(text_override or {})
+
     member = request.user.member
     assignment_request = get_object_or_404(AssignmentRequest, id=request_id, member=member)
+    old_amount = assignment_request.get_amount()
+    old_approver = assignment_request.approver
     assignment_request_form = AssignmentRequestForm(request.POST or None, instance=assignment_request)
     if request.method == 'POST' and assignment_request_form.is_valid():
         # edit request
-        assignment_request = assignment_request_form.instance
-        assignment_request.status = AssignmentRequest.REQUESTED
-        assignment_request.save()
-        adminnotification.request_changed(assignment_request)
-        return redirect('juntagrico-assignment-request:requested')
+        new_request = assignment_request_form.instance
+        if new_request.get_amount() > old_amount:
+            # if significant changes were made re-approval is needed
+            new_request.status = AssignmentRequest.REQUESTED
+            new_request.save()
+            adminnotification.request_changed(new_request)
+            messages.success(request, text['rerequested'])
+        else:
+            if new_request.status is not AssignmentRequest.REQUESTED:
+                # keep approver, if they replied already
+                new_request.approver = old_approver
+            new_request.save()
+            messages.success(request, text['changed'])
+        return redirect('juntagrico-assignment-request:request')
 
     renderdict = {
         'form': assignment_request_form,

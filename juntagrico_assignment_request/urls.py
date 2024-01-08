@@ -6,7 +6,6 @@ from juntagrico_assignment_request import views
 app_name = 'juntagrico-assignment-request'
 urlpatterns = [
     path('ar/assignment/request', views.request_assignment, name='request'),
-    path('ar/assignment/requested', views.request_assignment, {'sent': True}, name='requested'),
     path('ar/assignment/delete/<int:request_id>/', views.delete_request_assignment, name='delete'),
     path('ar/assignment/edit/<int:request_id>/', views.edit_request_assignment, name='edit'),
     path('ar/assignment/list', views.list_assignment_requests, name='list'),

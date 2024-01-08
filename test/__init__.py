@@ -90,7 +90,7 @@ class AssignmentRequestTestCase(TestCase):
         self.area = ActivityArea.objects.create(**area_data)
         self.area2 = ActivityArea.objects.create(**area_data2)
 
-    def assignment_request_data(self, approver=None, for_form=False, approved=False):
+    def assignment_request_data(self, approver=None, for_form=False, approved=False, **kwargs):
         if for_form:
             if approver is None:
                 approver = ''
@@ -106,6 +106,7 @@ class AssignmentRequestTestCase(TestCase):
             'location': 'location',
             'description': 'description'
         }
+        data.update(**kwargs)
         if not for_form:
             data['member'] = self.member
             if approved:
