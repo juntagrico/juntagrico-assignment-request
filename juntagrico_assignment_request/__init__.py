@@ -1,2 +1,1 @@
-name = 'juntagrico_assignment_request'
-version = '1.6.0'
+__version__ = '1.6.0'
