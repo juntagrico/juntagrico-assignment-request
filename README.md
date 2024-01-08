@@ -21,7 +21,7 @@ It allows members to request assignments for jobs they have done, that were not 
 1. Add `juntagrico-assignment-request` to your `requirements.txt`
 2. Add `'juntagrico_assignment_request',` to the `INSTALLED_APPS` in your `settings.py` **above** `juntagrico`
 3. Add `path(r'', include('juntagrico_assignment_request.urls')),` at the end of your `urls.py`
-4. Redeploy your project
+4. Redeploy your project (and apply migrations)
 
 ## Configuration
 
@@ -49,3 +49,29 @@ The [ASSIGNMENT_UNIT](https://juntagrico.readthedocs.io/en/latest/settings.html?
 The extension creates job types and jobs on the fly behind the scenes as they are needed to create the assignments and show them to the member that made them.
 In order to not clutter the admin views with automatically generated content, these jobs and job types are hidden.
 As a side effect there will be assignments that have a valid job link, but when you follow that job, you will be told that no job with the given id exists.
+
+## Screenshots
+
+New menu entry
+
+![New menu entry](doc/01_menu_entry.png)
+
+Request Form
+
+![Request Form](doc/02_request_form)
+
+Overview about reported assignments
+
+![Overview](doc/03_overview.png)
+
+Form to accept/deny the request
+
+![Accept/Deny Form](doc/04_accept_deny.png)
+
+Confirmation by mail for the requester
+
+![Mail Confirmation](doc/05_mail_confirmation.png)
+
+The assignment appears in the list
+
+![New menu entry](doc/06_assignment_list.png)
