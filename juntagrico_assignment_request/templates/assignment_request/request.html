@@ -25,7 +25,14 @@
     </div>
     
     <div class="col-md-12 mb-4">
-        {% blocktrans %}Hier kannst du deine {{ v_assignment_pl }} melden. Dies gilt für Termine, die nicht mit einer festgelegten Arbeitszeit buchbar sind aber auch für selbständige Einsätze. Bitte sprich dich vorgängig mit einer Gartenfachkraft oder einer/m Arbeitsgruppen-KoordinatorIn ab, wenn du selbständige Einsätze machen willst.{% endblocktrans %}
+        {% block instructions %}
+            {% blocktrans %}
+                Hier kannst du deine {{ v_assignment_pl }} melden. 
+                Dies gilt für Termine, die nicht mit einer festgelegten Arbeitszeit buchbar sind aber auch
+                für selbständige Einsätze. Bitte sprich dich vorgängig mit einer Gartenfachkraft
+                oder einer/m Arbeitsgruppen-KoordinatorIn ab, wenn du selbständige Einsätze machen willst.
+            {% endblocktrans %}
+        {% endblock %}
     </div>
 
     <div class="col-md-12 mb-4">
