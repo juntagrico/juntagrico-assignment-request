@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.forms import ModelForm
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import gettext
@@ -22,9 +23,18 @@ class AssignmentRequestForm(ModelForm):
             "activityarea": _("Tätigkeitsbereich"),
         }
 
+    def activityarea_queryset(self):
+        # exclude
+        qs = self.fields['activityarea'].queryset
+        qs_filter = getattr(settings, 'ASSIGNMENT_REQUEST_AREAS', None)
+        if callable(qs_filter):
+            return qs_filter(qs)
+        return qs
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['approver'].queryset = all_approvers()
+        self.fields['activityarea'].queryset = self.activityarea_queryset()
         self.fields['amount'].widget.attrs['min'] = 1
         self.fields['job_time'].widget.format = '%d.%m.%Y %H:%M'
         self.fields['job_time'].widget.attrs['placeholder'] = _('TT.MM.JJJJ HH:MM')

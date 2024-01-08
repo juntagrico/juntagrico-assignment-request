@@ -19,6 +19,8 @@ INSTALLED_APPS = [
     'juntagrico',
     'crispy_forms',
     'import_export',
+    'adminsortable2',
+    'polymorphic',
     'fontawesomefree',
 ]
 
@@ -117,3 +119,11 @@ SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 CRISPY_FAIL_SILENTLY = not DEBUG
+
+
+# Example usage of ASSIGNMENT_REQUEST_AREAS
+def only_visible(queryset):
+    return queryset.filter(hidden=False)
+
+
+ASSIGNMENT_REQUEST_AREAS = only_visible

@@ -34,6 +34,22 @@ If members don't select any confirmer all users with the following permission wi
 
 The [ASSIGNMENT_UNIT](https://juntagrico.readthedocs.io/en/latest/settings.html?highlight=ASSIGNMENT_UNIT#assignment-unit) setting is respected.
 
+### ASSIGNMENT_REQUEST_AREAS
+
+If you need to limit the activity areas that can be selected in the requests,
+set this setting to a function, that takes an `ActivityArea` queryset as the first argument
+and returns a filtered queryset.
+By default, all activity areas can be selected.
+
+Example: Limit to include only visible activity areas:
+
+```python
+def only_visible(queryset):
+    return queryset.filter(hidden=False)
+
+ASSIGNMENT_REQUEST_AREAS = only_visible
+```
+
 ## Usage
 
 1. Members will see a new entry in the menu to request assignments
