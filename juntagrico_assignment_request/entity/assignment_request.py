@@ -17,8 +17,15 @@ from juntagrico.util.temporal import start_of_business_year
 
 class AssignmentQueryset(models.QuerySet):
     def pending(self):
+        # assignment requests that have not been replied yet or ar from the current business year
         start = datetime.combine(start_of_business_year(), datetime_time.min, tzinfo=get_default_timezone())
         return self.filter(Q(status=AssignmentRequest.REQUESTED) | Q(job_time__gte=start))
+
+    def for_approver(self, member):
+        # assignment requests that are requested to this member
+        if member.user.has_perm('juntagrico_assignment_request.notified_on_unapproved_assignments'):
+            return self.filter(Q(approver=member) | Q(approver__isnull=True))
+        return self.filter(approver=member)
 
 
 class AssignmentRequest(models.Model):

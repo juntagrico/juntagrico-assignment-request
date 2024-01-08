@@ -1,7 +1,6 @@
 from datetime import date
 
 from django.contrib.auth.decorators import login_required, permission_required
-from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404
 from juntagrico.view_decorators import highlighted_menu
 
@@ -72,18 +71,12 @@ def edit_request_assignment(request, request_id):
     return render(request, "assignment_request/edit.html", renderdict)
 
 
-def filter_approver(user):
-    if user.has_perm('juntagrico_assignment_request.notified_on_unapproved_assignments'):
-        return Q(approver=user.member) | Q(approver__isnull=True)
-    return Q(approver=user.member)
-
-
 @permission_required('juntagrico_assignment_request.can_confirm_assignments')
 def list_assignment_requests(request):
     """
     List assignment requests
     """
-    ar = AssignmentRequest.objects.filter(status=AssignmentRequest.REQUESTED).filter(filter_approver(request.user))
+    ar = AssignmentRequest.objects.filter(status=AssignmentRequest.REQUESTED).for_approver(request.user.member)
     renderdict = {
         'assignment_requests': ar,
     }
@@ -92,7 +85,7 @@ def list_assignment_requests(request):
 
 @permission_required('juntagrico_assignment_request.can_confirm_assignments')
 def list_archive(request):
-    ar = AssignmentRequest.objects.exclude(status=AssignmentRequest.REQUESTED).filter(filter_approver(request.user))
+    ar = AssignmentRequest.objects.exclude(status=AssignmentRequest.REQUESTED).for_approver(request.user.member)
     renderdict = {
         'assignment_requests': ar,
         'archive': True
