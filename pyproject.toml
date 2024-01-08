@@ -35,6 +35,7 @@ dynamic = ["version"]
 [project.urls]
 Homepage = "https://www.juntagrico.org"
 Issues = "https://github.com/juntagrico/juntagrico-assignment-request/issues"
+Changelog = "https://github.com/juntagrico/juntagrico-assignment-request/releases"
 
 [tool.setuptools.packages.find]
 include = ["juntagrico_assignment_request*"]
