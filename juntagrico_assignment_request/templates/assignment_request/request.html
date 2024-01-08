@@ -14,15 +14,7 @@
 {% block content %}  
     {% vocabulary "assignment" as v_assignment %}
     {% vocabulary "assignment_pl" as v_assignment_pl %}
-    <div class="col-md-12 mb-4">
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
-    </div>
+    {% include "assignment_request/snippets/messages.html" %}
     
     <div class="col-md-12 mb-4">
         {% block instructions %}
