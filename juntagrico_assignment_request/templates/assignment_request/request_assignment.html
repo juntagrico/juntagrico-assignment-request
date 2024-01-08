@@ -67,10 +67,10 @@
                             {% endif %}
                         </td>
                         <td class="text-nowrap">
-                            <a href="{% url 'ar-edit-assignment-request' assignment_request.id %}"
+                            <a href="{% url 'juntagrico-assignment-request:edit' assignment_request.id %}"
                                class="edit"><i class="fas fa-pen"></i></a>
                             {% if not assignment_request.is_confirmed %}
-                            <a href="{% url 'ar-delete-assignment-request' assignment_request.id %}"
+                            <a href="{% url 'juntagrico-assignment-request:delete' assignment_request.id %}"
                                onclick="return confirm('{% trans 'Bist du sicher, dass du die Anfrage löschen möchtest' %}');"
                                class="delete"><i class="fas fa-trash"></i></a>
                             {% endif %}

@@ -12,8 +12,8 @@ Du hattest bei der Anfrage folgende Mitteilung hinterlassen:
 {% endif %}
 
 Du kannst hier deine Anfrage anpassen:
-{{ serverurl }}{% url 'ar-edit-assignment-request' assignment_request.id %}
+{{ serverurl }}{% url 'juntagrico-assignment-request:edit' assignment_request.id %}
 Oder sie hier löschen:
-{{ serverurl }}{% url 'ar-delete-assignment-request' assignment_request.id %}
+{{ serverurl }}{% url 'juntagrico-assignment-request:delete' assignment_request.id %}
 {% endblock %}
 

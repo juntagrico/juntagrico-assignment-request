@@ -16,8 +16,8 @@ Laut {{ assignment_request.member }} wurde das mit dir abgesprochen.
 {% endif %}
 
 Bestätige ohne Kommentar
-{{ serverurl }}{% url 'ar-confirm-assignment-request' assignment_request.id %}
+{{ serverurl }}{% url 'juntagrico-assignment-request:confirm' assignment_request.id %}
 oder schreibe zuerst eine Antwort an {{ assignment_request.member }}:
-{{ serverurl }}{% url 'ar-respond-assignment-request' assignment_request.id %}
+{{ serverurl }}{% url 'juntagrico-assignment-request:respond' assignment_request.id %}
 {% endblock %}
 

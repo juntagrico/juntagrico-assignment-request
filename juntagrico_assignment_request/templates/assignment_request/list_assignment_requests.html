@@ -17,7 +17,7 @@
 {% block content %}
     {% if archive %}
     <div class="col-md-12 mb-4">
-        <a href="{% url 'ar-list-assignment-requests' %}">{% trans "Zurück zu den offenen Anfragen" %}</a>
+        <a href="{% url 'juntagrico-assignment-request:list' %}">{% trans "Zurück zu den offenen Anfragen" %}</a>
     </div>
     {% endif %}
     <div class="col-md-12 mb-4">
@@ -62,7 +62,7 @@
                         </td>
                         <td class="text-nowrap">
                             {% if not assignment_request.is_confirmed and not assignment_request.is_rejected %}
-                            <a href="{% url 'ar-respond-assignment-request' assignment_request.id %}" class="btn btn-success">Beantworten</a>
+                            <a href="{% url 'juntagrico-assignment-request:respond' assignment_request.id %}" class="btn btn-success">Beantworten</a>
                             {% endif %}
                         </td>
                     </tr>
@@ -81,9 +81,9 @@
     </div>
     <div class="col-md-12 mb-4">
     {% if archive %}
-        <a href="{% url 'ar-list-assignment-requests' %}">{% trans "Zurück zu den offenen Anfragen" %}</a>
+        <a href="{% url 'juntagrico-assignment-request:list' %}">{% trans "Zurück zu den offenen Anfragen" %}</a>
     {% else %}
-        <a href="{% url 'ar-list-archive' %}">{% trans "Beantwortete Anfragen anzeigen" %}</a>
+        <a href="{% url 'juntagrico-assignment-request:archive' %}">{% trans "Beantwortete Anfragen anzeigen" %}</a>
     {% endif %}
     </div>
 {% endblock %}

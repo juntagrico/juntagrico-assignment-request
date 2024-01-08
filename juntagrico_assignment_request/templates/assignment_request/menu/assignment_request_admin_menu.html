@@ -2,7 +2,7 @@
 {% load i18n %}
 <li class="nav-item">
     {% vocabulary "assignment_pl" as v_assignment_pl %}
-    <a class="nav-link" href="{% url 'ar-list-assignment-requests' %}">
+    <a class="nav-link" href="{% url 'juntagrico-assignment-request:list' %}">
         {% blocktrans %}Angemeldete {{ v_assignment_pl }}{% endblocktrans %}
     </a>
 </li>

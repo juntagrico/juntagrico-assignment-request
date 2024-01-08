@@ -12,6 +12,6 @@ Du hattest bei der Anfrage folgende Mitteilung hinterlassen:
 {% endif %}
 
 Du kannst auf die Rückfrage antworten, indem du hier die Anfrage anpasst:
-{{ serverurl }}{% url 'ar-edit-assignment-request' assignment_request.id %}
+{{ serverurl }}{% url 'juntagrico-assignment-request:edit' assignment_request.id %}
 {% endblock %}
 

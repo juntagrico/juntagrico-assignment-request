@@ -3,5 +3,5 @@
 {% load i18n %}
 <li class="nav-item">
     {% vocabulary "assignment" as v_assignment %}
-    <a class="nav-link {{ request|activemenu:"request_assignment" }}" href="{% url 'ar-request-assignment' %}">{% blocktrans %}{{ v_assignment }} melden{% endblocktrans %}</a>
+    <a class="nav-link {{ request|activemenu:"request_assignment" }}" href="{% url 'juntagrico-assignment-request:request' %}">{% blocktrans %}{{ v_assignment }} melden{% endblocktrans %}</a>
 </li>

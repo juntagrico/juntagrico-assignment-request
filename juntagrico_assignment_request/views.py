@@ -25,7 +25,7 @@ def request_assignment(request, sent=False):
         assignment_request.member = member
         assignment_request.save()
         adminnotification.request_created(assignment_request)
-        return redirect('ar-assignment-requested')
+        return redirect('juntagrico-assignment-request:requested')
 
     renderdict = {
         'assignment_requests': AssignmentRequest.objects.filter(member=member).pending(),
@@ -45,7 +45,7 @@ def delete_request_assignment(request, request_id):
     if assignment_request.member == request.user.member\
             and not assignment_request.assignment:
         assignment_request.delete()
-    return redirect('ar-request-assignment')
+    return redirect('juntagrico-assignment-request:request')
 
 
 @login_required
@@ -64,7 +64,7 @@ def edit_request_assignment(request, request_id):
         assignment_request.status = AssignmentRequest.REQUESTED
         assignment_request.save()
         adminnotification.request_changed(assignment_request)
-        return redirect('ar-assignment-requested')
+        return redirect('juntagrico-assignment-request:requested')
 
     renderdict = {
         'form': assignment_request_form,
@@ -119,7 +119,7 @@ def respond_assignment_request(request, request_id):
         assignment_request.approver = request.user.member
         assignment_request.save()
         membernotification.request_handled(assignment_request)
-        return redirect('ar-list-assignment-requests')
+        return redirect('juntagrico-assignment-request:list')
 
     renderdict = {
         'assignment_request': assignment_request,
@@ -143,4 +143,4 @@ def confirm_assignment_request(request, request_id):
         assignment_request.approver = request.user.member
         assignment_request.save()
         membernotification.request_handled(assignment_request)
-    return redirect('ar-list-assignment-requests')
+    return redirect('juntagrico-assignment-request:list')

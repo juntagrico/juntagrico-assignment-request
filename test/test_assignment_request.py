@@ -7,8 +7,8 @@ from test import AssignmentRequestTestCase
 
 class AssignmentRequestTests(AssignmentRequestTestCase):
     def test_assignment_request(self):
-        self.assertGet(reverse('ar-request-assignment'))
-        self.assertPost(reverse('ar-request-assignment'),
+        self.assertGet(reverse('juntagrico-assignment-request:request'))
+        self.assertPost(reverse('juntagrico-assignment-request:request'),
                         self.assignment_request_data(self.approver, for_form=True), 302)
         ar = AssignmentRequest.objects.filter(approver=self.approver.pk)
         self.assertEqual(ar.count(), 1)
@@ -18,9 +18,9 @@ class AssignmentRequestTests(AssignmentRequestTestCase):
 
     def test_assignment_request_edit(self):
         ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.approver))
-        self.assertGet(reverse('ar-request-assignment'))  # test list of existing own requests
-        self.assertGet(reverse('ar-edit-assignment-request', args=(ar.pk,)))
-        self.assertPost(reverse('ar-edit-assignment-request', args=(ar.pk,)),
+        self.assertGet(reverse('juntagrico-assignment-request:request'))  # test list of existing own requests
+        self.assertGet(reverse('juntagrico-assignment-request:edit', args=(ar.pk,)))
+        self.assertPost(reverse('juntagrico-assignment-request:edit', args=(ar.pk,)),
                         self.assignment_request_data(self.approver, for_form=True), 302)
         ar.refresh_from_db()
         self.assertEqual(ar.status, AssignmentRequest.REQUESTED)
@@ -29,7 +29,7 @@ class AssignmentRequestTests(AssignmentRequestTestCase):
 
     def test_assignment_request_delete(self):
         ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.approver))
-        self.assertGet(reverse('ar-delete-assignment-request', args=(ar.pk,)), 302)
+        self.assertGet(reverse('juntagrico-assignment-request:delete', args=(ar.pk,)), 302)
         with self.assertRaises(AssignmentRequest.DoesNotExist):
             ar.refresh_from_db()
 
@@ -37,12 +37,12 @@ class AssignmentRequestTests(AssignmentRequestTestCase):
         # can not delete accepted assignment request
         data = self.assignment_request_data(self.approver, approved=True)
         ar = AssignmentRequest.objects.create(**data)
-        self.assertGet(reverse('ar-delete-assignment-request', args=(ar.pk,)), 302)
+        self.assertGet(reverse('juntagrico-assignment-request:delete', args=(ar.pk,)), 302)
         ar.refresh_from_db()
         self.assertNotEquals(ar, None)
 
     def test_assignment_request_wo_approver(self):
-        self.assertPost(reverse('ar-request-assignment'), self.assignment_request_data(for_form=True), 302)
+        self.assertPost(reverse('juntagrico-assignment-request:request'), self.assignment_request_data(for_form=True), 302)
         ar = AssignmentRequest.objects.filter(approver=self.approver.pk)
         self.assertEqual(ar.count(), 0)
         self.assertEqual(len(mail.outbox), 1)  # request email to general approver
@@ -50,20 +50,20 @@ class AssignmentRequestTests(AssignmentRequestTestCase):
 
     def test_assignment_request_list(self):
         AssignmentRequest.objects.create(**self.assignment_request_data(self.approver))  # display at least one ar
-        self.assertGet(reverse('ar-list-assignment-requests'), 302)  # normal member has no access
-        self.assertGet(reverse('ar-list-assignment-requests'), member=self.approver)
+        self.assertGet(reverse('juntagrico-assignment-request:list'), 302)  # normal member has no access
+        self.assertGet(reverse('juntagrico-assignment-request:list'), member=self.approver)
 
     def test_assignment_request_archive(self):
         AssignmentRequest.objects.create(**self.assignment_request_data(self.approver))  # display at least one ar
-        self.assertGet(reverse('ar-list-archive'), 302)  # normal member has no access
-        self.assertGet(reverse('ar-list-archive'), member=self.approver)
+        self.assertGet(reverse('juntagrico-assignment-request:archive'), 302)  # normal member has no access
+        self.assertGet(reverse('juntagrico-assignment-request:archive'), member=self.approver)
 
     def test_assignment_confirmation(self):
         ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.approver))
-        self.assertGet(reverse('ar-confirm-assignment-request', args=(ar.pk,)), 302)  # member can not approve
+        self.assertGet(reverse('juntagrico-assignment-request:confirm', args=(ar.pk,)), 302)  # member can not approve
         ar.refresh_from_db()
         self.assertEqual(ar.status, AssignmentRequest.REQUESTED)
-        self.assertGet(reverse('ar-confirm-assignment-request', args=(ar.pk,)), 302, member=self.approver)
+        self.assertGet(reverse('juntagrico-assignment-request:confirm', args=(ar.pk,)), 302, member=self.approver)
         ar.refresh_from_db()
         self.assertEqual(ar.status, AssignmentRequest.CONFIRMED)
         self.assertEqual(ar.assignment.amount, ar.get_amount())
@@ -79,8 +79,8 @@ class AssignmentRequestTests(AssignmentRequestTestCase):
 
     def test_assignment_confirmation_with_response_by_other_approver(self):
         ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.approver))
-        self.assertGet(reverse('ar-respond-assignment-request', args=(ar.pk,)), member=self.approver)
-        self.assertPost(reverse('ar-respond-assignment-request', args=(ar.pk,)),
+        self.assertGet(reverse('juntagrico-assignment-request:respond', args=(ar.pk,)), member=self.approver)
+        self.assertPost(reverse('juntagrico-assignment-request:respond', args=(ar.pk,)),
                         self.assignment_response_data('confirm'), 302, member=self.approver2)
         ar.refresh_from_db()
         self.assertEqual(ar.status, AssignmentRequest.CONFIRMED)
@@ -92,7 +92,7 @@ class AssignmentRequestTests(AssignmentRequestTestCase):
 
     def assignment_response(self, decision='submit', expected_status=AssignmentRequest.REQUESTED):
         ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.approver))
-        self.assertPost(reverse('ar-respond-assignment-request', args=(ar.pk,)),
+        self.assertPost(reverse('juntagrico-assignment-request:respond', args=(ar.pk,)),
                         self.assignment_response_data(decision), 302, member=self.approver)
         ar.refresh_from_db()
         self.assertEqual(ar.status, expected_status)
