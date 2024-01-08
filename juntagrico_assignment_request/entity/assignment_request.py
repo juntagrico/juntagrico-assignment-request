@@ -1,7 +1,9 @@
-from datetime import datetime, date
+from datetime import datetime, date, time as datetime_time
 import time
 
 from django.db import models
+from django.db.models import Q
+from django.utils.timezone import get_default_timezone
 from django.utils.translation import gettext as _
 from django.core.validators import MinValueValidator
 from juntagrico.entity.location import Location
@@ -10,6 +12,13 @@ from juntagrico.entity.member import Member
 from juntagrico.entity.jobs import Assignment, ActivityArea, JobType, RecuringJob
 
 from juntagrico.config import Config
+from juntagrico.util.temporal import start_of_business_year
+
+
+class AssignmentQueryset(models.QuerySet):
+    def pending(self):
+        start = datetime.combine(start_of_business_year(), datetime_time.min, tzinfo=get_default_timezone())
+        return self.filter(Q(status=AssignmentRequest.REQUESTED) | Q(job_time__gte=start))
 
 
 class AssignmentRequest(models.Model):
@@ -61,6 +70,8 @@ class AssignmentRequest(models.Model):
                               help_text=_('Hier "Bestätigt" auswählen, um die Anfrage anzunehmen'))
     response = models.TextField(_('Antwort'), blank=True, null=True,
                                 help_text=_("Rückmeldung an " + Config.vocabulary('member') + ". Kann leer bleiben."))
+
+    objects = AssignmentQueryset.as_manager()
 
     def __str__(self):
         return _('%s Anfrage #%s') % (Config.vocabulary('assignment'), self.id)

@@ -3,12 +3,12 @@ from django.utils.translation import gettext_lazy as _
 from django.utils.translation import gettext
 from django.urls import reverse
 
-from juntagrico_assignment_request.dao.assignmentrequestdao import AssignmentRequestDao
-from juntagrico_assignment_request.models import AssignmentRequest
-
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit, HTML
 from crispy_forms.bootstrap import FormActions
+
+from juntagrico_assignment_request.models import AssignmentRequest
+from juntagrico_assignment_request.utils import all_approvers
 
 
 class AssignmentRequestForm(ModelForm):
@@ -24,7 +24,7 @@ class AssignmentRequestForm(ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['approver'].queryset = AssignmentRequestDao.all_approvers()
+        self.fields['approver'].queryset = all_approvers()
         self.fields['amount'].widget.attrs['min'] = 1
         self.fields['job_time'].widget.format = '%d.%m.%Y %H:%M'
         self.fields['job_time'].widget.attrs['placeholder'] = _('TT.MM.JJJJ HH:MM')

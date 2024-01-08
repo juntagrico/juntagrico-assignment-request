@@ -5,7 +5,6 @@ from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404
 from juntagrico.view_decorators import highlighted_menu
 
-from juntagrico_assignment_request.dao.assignmentrequestdao import AssignmentRequestDao
 from juntagrico_assignment_request.forms import AssignmentRequestForm, AssignmentResponseForm
 from juntagrico_assignment_request.mailer import membernotification, adminnotification
 from juntagrico_assignment_request.models import AssignmentRequest
@@ -29,7 +28,7 @@ def request_assignment(request, sent=False):
         return redirect('ar-assignment-requested')
 
     renderdict = {
-        'assignment_requests': AssignmentRequestDao.current_requests_by_member(member),
+        'assignment_requests': AssignmentRequest.objects.filter(member=member).pending(),
         'form': assignment_request_form,
         'sent': sent
     }
