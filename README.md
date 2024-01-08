@@ -21,9 +21,8 @@ It allows members to request assignments for jobs they have done, that were not 
 
 1. Add `juntagrico-assignment-request` to your `requirements.txt`
 2. Add `'juntagrico_assignment_request',` to the `INSTALLED_APPS` in your `settings.py`
-3. Add `re_path(r'', include('juntagrico_assignment_request.urls')),` at the end of your `urls.py`
-4. Apply migrations with `python manage.py migrate`
-4. Redeploy your project
+3. Add `path(r'', include('juntagrico_assignment_request.urls')),` at the end of your `urls.py`
+4. Redeploy your project (and apply migrations)
 
 ## Configuration
 
