@@ -4,7 +4,7 @@ from django.utils import timezone
 from juntagrico.entity.jobs import ActivityArea
 from juntagrico.entity.member import Member
 
-from juntagrico_assignment_request.entity.assignment_request import AssignmentRequest
+from juntagrico_assignment_request.models import AssignmentRequest
 
 
 @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')

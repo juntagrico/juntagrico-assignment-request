@@ -1,4 +1,5 @@
 from django.apps import AppConfig
+from django.db.models import signals
 
 
 class JuntagricoAssignmentRequestAppconfig(AppConfig):
@@ -8,6 +9,14 @@ class JuntagricoAssignmentRequestAppconfig(AppConfig):
     def ready(self):
         from juntagrico.util import addons
         addons.config.register_version(self.name)
+
+        # Connect signals
+        from juntagrico_assignment_request import models, hack
+        from juntagrico.entity.jobs import JobType, RecuringJob, Assignment
+        signals.pre_save.connect(models.AssignmentRequest.pre_save, sender=models.AssignmentRequest)
+        signals.post_save.connect(hack.post_save_job_type, sender=JobType)
+        signals.post_save.connect(hack.post_save_recuringjob, sender=RecuringJob)
+        signals.pre_save.connect(hack.pre_save_assignment, sender=Assignment)
 
         #############################################
         # Hide automatically generated jobs and types

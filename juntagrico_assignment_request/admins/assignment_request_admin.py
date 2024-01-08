@@ -5,7 +5,7 @@ from juntagrico.admins import BaseAdmin
 from juntagrico.util.admin import MyHTMLWidget
 from juntagrico.config import Config
 
-from juntagrico_assignment_request.entity.assignment_request import AssignmentRequest
+from juntagrico_assignment_request.models import AssignmentRequest
 from juntagrico_assignment_request.utils import all_approvers
 
 

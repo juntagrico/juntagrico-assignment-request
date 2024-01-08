@@ -1,4 +1,4 @@
-from juntagrico_assignment_request.entity.assignment_request import AssignmentRequest
+from juntagrico_assignment_request.models import AssignmentRequest
 from test import AssignmentRequestTestCase
 
 
