@@ -17,6 +17,8 @@ INSTALLED_APPS = [
     'django.contrib.admin',
     'juntagrico',
     'crispy_forms',
+    'import_export',
+    'fontawesomefree',
     'juntagrico_assignment_request',
 ]
 
@@ -109,22 +111,9 @@ TEMPLATES = [
     },
 ]
 
-LOGIN_REDIRECT_URL = "/my/home"
+LOGIN_REDIRECT_URL = "/"
 
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
-
-
-GOOGLE_API_KEY = 'AIzaSyCcii4Z71qyky54kEQtRhFbB_z-2zbSU28'
-
-BILLING = True
-
-CACHES = {
-        'default': {
-            'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
-            'LOCATION': 'juntagrico_app_cache_table',
-            'TIMEOUT': None,
-        }
-    }
 
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 CRISPY_FAIL_SILENTLY = not DEBUG
