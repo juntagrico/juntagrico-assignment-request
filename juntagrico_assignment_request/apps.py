@@ -8,3 +8,22 @@ class JuntagricoAssignmentRequestAppconfig(AppConfig):
     def ready(self):
         from juntagrico.util import addons
         addons.config.register_version(self.name)
+
+        #############################################
+        # Hide automatically generated jobs and types
+        # in admin by monkey patching
+        from juntagrico.admins.job_admin import JobAdmin
+        from juntagrico.admins.job_type_admin import JobTypeAdmin
+
+        def get_job_type_queryset(self, request):
+            return original_get_job_type_queryset(self, request).exclude(
+                recuringjob__assignment__assignmentrequest__isnull=False)
+
+        def get_job_queryset(self, request):
+            return original_get_job_queryset(self, request).exclude(
+                assignment__assignmentrequest__isnull=False)
+
+        original_get_job_type_queryset = JobTypeAdmin.get_queryset
+        JobTypeAdmin.get_queryset = get_job_type_queryset
+        original_get_job_queryset = JobAdmin.get_queryset
+        JobAdmin.get_queryset = get_job_queryset

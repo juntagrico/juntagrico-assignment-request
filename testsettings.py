@@ -15,11 +15,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.admin',
+    'juntagrico_assignment_request',
     'juntagrico',
     'crispy_forms',
     'import_export',
     'fontawesomefree',
-    'juntagrico_assignment_request',
 ]
 
 DATABASES = {
