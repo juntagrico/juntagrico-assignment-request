@@ -49,8 +49,8 @@ class AssignmentRequest(models.Model):
     assignment = models.OneToOneField(Assignment, verbose_name=Config.vocabulary('assignment'),
                                       blank=True, null=True, on_delete=models.PROTECT)
 
-    amount = models.PositiveIntegerField(
-        _('Wert'), default=1, validators=[MinValueValidator(1)],
+    amount = models.FloatField(
+        _('Wert'), default=1, validators=[MinValueValidator(0)],
         help_text=_("Wie viele " + Config.vocabulary('assignment_pl') + "?") + _(
             " Wird mit 'Dauer in Stunden' multipliziert.") if Config.assignment_unit() == 'HOURS' else ''
     )
@@ -94,7 +94,7 @@ class AssignmentRequest(models.Model):
         :return: amount taking into account the assignment unit setting
         """
         if Config.assignment_unit() == 'HOURS':
-            return self.amount * self.duration
+            return self.amount * float(self.duration)
         return self.amount
 
     def save(self, **kwargs):

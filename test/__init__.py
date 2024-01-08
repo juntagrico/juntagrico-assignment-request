@@ -100,7 +100,7 @@ class AssignmentRequestTestCase(TestCase):
         data = {
             'job_time': date.strftime('%Y-%m-%d %H:%M') if for_form else date,
             'duration': 4,
-            'amount': 1,
+            'amount': 0.5,
             'approver': approver,
             'activityarea': self.area.pk if for_form else self.area,
             'location': 'location',

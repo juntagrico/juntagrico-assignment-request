@@ -20,4 +20,4 @@ class ManipulationTests(AssignmentRequestTestCase):
     def test_assignment_manipulation(self):
         self.ar.assignment.amount = 2
         self.ar.save()
-        self.assertEqual(self.ar.assignment.amount, 1)
+        self.assertEqual(self.ar.assignment.amount, 0.5)
