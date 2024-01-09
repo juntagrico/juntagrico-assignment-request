@@ -25,8 +25,11 @@ It allows members to request assignments for jobs they have done, that were not 
 
 ## Configuration
 
-When requesting an assignment, members can select the person that can confirm that they did a job.
+When requesting an assignment, members can select the person (confirmer) that can confirm that they did a job.
 To add people to this selection you will have to add this permission to that user: `juntagrico_assignment_request | Arbeitseinsatz Anfrage | Kann selbständige Arbeitseinsätze bestätigen`
+
+If you want to allow an activity area coordinator to confirm requests, but only on the areas they coordinate,
+add this permission to that user: `juntagrico_assignment_request | Arbeitseinsatz Anfrage | Kann selbständige Arbeitseinsätze im eigenen Tätigkeitsbereich bestätigen`
 
 Only the selected confirmer, will be informed about the request by email and can see the request.
 
@@ -41,7 +44,7 @@ set this setting to a function, that takes an `ActivityArea` queryset as the fir
 and returns a filtered queryset.
 By default, all activity areas can be selected.
 
-Example: Limit to include only visible activity areas:
+Example: Include only visible activity areas:
 
 ```python
 def only_visible(queryset):

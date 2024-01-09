@@ -195,5 +195,7 @@ class AssignmentRequest(models.Model):
         verbose_name_plural = _('%s Anfragen') % Config.vocabulary('assignment')
         permissions = (
             ('can_confirm_assignments', _('Kann selbständige Arbeitseinsätze bestätigen')),
+            ('can_confirm_assignments_for_area',
+             _('Kann selbständige Arbeitseinsätze im eigenen Tätigkeitsbereich bestätigen')),
             ('notified_on_unapproved_assignments', _('Wird über nicht abgesprochene Arbeitseinsätze informiert')),
         )

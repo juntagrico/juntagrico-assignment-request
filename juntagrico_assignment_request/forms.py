@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.forms import ModelForm, DateTimeInput
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import gettext
@@ -9,7 +10,7 @@ from crispy_forms.layout import Layout, Submit, HTML
 from crispy_forms.bootstrap import FormActions
 
 from juntagrico_assignment_request.models import AssignmentRequest
-from juntagrico_assignment_request.utils import all_approvers
+from juntagrico_assignment_request.utils import get_approvers
 
 
 class DateTimeWidget(DateTimeInput):
@@ -26,8 +27,8 @@ class DateTimeWidget(DateTimeInput):
 class AssignmentRequestForm(ModelForm):
     class Meta:
         model = AssignmentRequest
-        fields = ('job_time', 'amount', 'duration', 'approver',
-                  'activityarea', 'location', 'description')
+        fields = ('job_time', 'amount', 'duration', 'activityarea',
+                  'approver', 'location', 'description')
         labels = {
             "amount": _("Anzahl Einsätze"),
             "approver": _("Abgesprochen mit"),
@@ -41,9 +42,18 @@ class AssignmentRequestForm(ModelForm):
             return qs_filter(qs)
         return qs
 
+    def approvers_by_area(self):
+        general_approvers = get_approvers(general_only=True)
+        approvers = {
+            area.id: area.coordinator.id
+            for area in self.fields['activityarea'].queryset
+            if area.coordinator in self.fields['approver'].queryset and area.coordinator not in general_approvers
+        }
+        return approvers
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['approver'].queryset = all_approvers()
+        self.fields['approver'].queryset = get_approvers()
         self.fields['activityarea'].queryset = self.activityarea_queryset()
         self.fields['duration'].widget.attrs['step'] = 1.0
         self.fields['job_time'].widget = DateTimeWidget()
@@ -52,12 +62,20 @@ class AssignmentRequestForm(ModelForm):
         self.helper.label_class = 'col-md-3'
         self.helper.field_class = 'col-md-9'
         self.helper.layout = Layout(
-            'job_time', 'amount', 'duration', 'approver',
-            'activityarea', 'location', 'description',
+            'job_time', 'amount', 'duration', 'activityarea',
+            'approver', 'location', 'description',
             FormActions(
                 Submit('submit', _('Absenden'), css_class='btn-success'),
             )
         )
+
+    def clean(self):
+        # check that approver is valid for the selected area
+        cleaned_data = super().clean()
+        valid_approvers = (get_approvers(general_only=True) |
+                           get_approvers().filter(activityarea=cleaned_data['activityarea']))
+        if cleaned_data['approver'] and cleaned_data['approver'] not in valid_approvers:
+            raise ValidationError(_('Ungültige Auswahl bei "Abgesprochen mit"'))
 
 
 class AssignmentResponseForm(ModelForm):

@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 {% load i18n %}
 {% load juntagrico.config %}
 {% load crispy_forms_tags %}
@@ -103,3 +104,7 @@
     {% endif %}
 {% endblock %}
 
+{% block scripts %}
+    {{ form.approvers_by_area|json_script:'approvers_data' }}
+    <script type="text/javascript" src="{% static 'juntagrico_assignment_request/js/request.js' %}"></script>
+{% endblock %}
