@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.forms import ModelForm
+from django.forms import ModelForm, DateTimeInput
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import gettext
 from django.urls import reverse
@@ -10,6 +10,17 @@ from crispy_forms.bootstrap import FormActions
 
 from juntagrico_assignment_request.models import AssignmentRequest
 from juntagrico_assignment_request.utils import all_approvers
+
+
+class DateTimeWidget(DateTimeInput):
+    """ Widget using browsers date picker
+    """
+    input_type = 'datetime-local'
+
+    def format_value(self, value):
+        if isinstance(value, str):
+            return value
+        return value.strftime('%Y-%m-%dT%H:%M')
 
 
 class AssignmentRequestForm(ModelForm):
@@ -24,7 +35,6 @@ class AssignmentRequestForm(ModelForm):
         }
 
     def activityarea_queryset(self):
-        # exclude
         qs = self.fields['activityarea'].queryset
         qs_filter = getattr(settings, 'ASSIGNMENT_REQUEST_AREAS', None)
         if callable(qs_filter):
@@ -36,8 +46,7 @@ class AssignmentRequestForm(ModelForm):
         self.fields['approver'].queryset = all_approvers()
         self.fields['activityarea'].queryset = self.activityarea_queryset()
         self.fields['duration'].widget.attrs['step'] = 1.0
-        self.fields['job_time'].widget.format = '%d.%m.%Y %H:%M'
-        self.fields['job_time'].widget.attrs['placeholder'] = _('TT.MM.JJJJ HH:MM')
+        self.fields['job_time'].widget = DateTimeWidget()
         self.helper = FormHelper()
         self.helper.form_class = 'form-horizontal'
         self.helper.label_class = 'col-md-3'
