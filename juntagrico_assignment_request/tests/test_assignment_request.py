@@ -2,7 +2,7 @@ from django.core import mail
 from django.urls import reverse
 
 from juntagrico_assignment_request.models import AssignmentRequest
-from test import AssignmentRequestTestCase
+from . import AssignmentRequestTestCase
 
 
 class AssignmentRequestTests(AssignmentRequestTestCase):

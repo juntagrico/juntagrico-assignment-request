@@ -29,7 +29,6 @@ jobs:
     - name: ruff
       run: |
         ruff check juntagrico_assignment_request
-        ruff check test
     - name: install CodeClimate reporter
       if: ${{ env.CC_TEST_REPORTER_ID != null && github.event_name == 'push'}}
       run: |

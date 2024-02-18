@@ -1,11 +1,12 @@
 from juntagrico_assignment_request.models import AssignmentRequest
-from test import AssignmentRequestTestCase
+from . import AssignmentRequestTestCase
 
 
 class ManipulationTests(AssignmentRequestTestCase):
-    def setUp(self):
-        super().setUp()
-        self.ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.approver, approved=True))
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.ar = AssignmentRequest.objects.create(**cls.assignment_request_data(cls.approver, approved=True))
 
     def test_job_type_manipulation(self):
         self.ar.assignment.job.type.activityarea = self.area2
