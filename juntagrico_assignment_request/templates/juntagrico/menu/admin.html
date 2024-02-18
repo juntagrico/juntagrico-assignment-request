@@ -1,7 +1,7 @@
-{% extends 'menu/admin_menu.html' %}
+{% extends 'juntagrico/menu/admin.html' %}
 {% load i18n %}
 {% load juntagrico.config %}
-{% block extend_admin_menu %}
+{% block extend %}
     <li class="nav-item">
         {% vocabulary "assignment_pl" as v_assignment_pl %}
         <a class="nav-link" href="{% url 'juntagrico-assignment-request:list' %}">

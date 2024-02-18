@@ -1,8 +1,8 @@
-{% extends 'menu/user_menu.html' %}
+{% extends 'juntagrico/menu/user.html' %}
 {% load i18n %}
 {% load juntagrico.common %}
 {% load juntagrico.config %}
-{% block extend_user_menu %}
+{% block extend %}
     <li class="nav-item">
         {% vocabulary "assignment" as v_assignment %}
         <a class="nav-link {{ request|activemenu:"request_assignment" }}" 
