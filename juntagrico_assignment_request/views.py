@@ -1,11 +1,12 @@
 from datetime import date
 
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
-from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404
+from django.utils.translation import gettext as _
+
 from juntagrico.view_decorators import highlighted_menu
 
-from juntagrico_assignment_request.dao.assignmentrequestdao import AssignmentRequestDao
 from juntagrico_assignment_request.forms import AssignmentRequestForm, AssignmentResponseForm
 from juntagrico_assignment_request.mailer import membernotification, adminnotification
 from juntagrico_assignment_request.models import AssignmentRequest
@@ -13,10 +14,16 @@ from juntagrico_assignment_request.models import AssignmentRequest
 
 @login_required
 @highlighted_menu('request_assignment')
-def request_assignment(request, sent=False):
+def request_assignment(request, text_override=None):
     """
     Request an assignment
     """
+
+    text = dict(
+        request_sent=_("Deine Anfrage wurde erfolgreich verschickt.<br>"
+                       "Du wirst per E-Mail benachrichtigt, sobald diese bestätigt wurde.")
+    )
+    text.update(text_override or {})
 
     member = request.user.member
     assignment_request_form = AssignmentRequestForm(request.POST or None)
@@ -26,14 +33,15 @@ def request_assignment(request, sent=False):
         assignment_request.member = member
         assignment_request.save()
         adminnotification.request_created(assignment_request)
-        return redirect('ar-assignment-requested')
+        messages.success(request, text['request_sent'])
+        # do a redirect to avoid resending on reloading
+        return redirect('juntagrico-assignment-request:request')
 
     renderdict = {
-        'assignment_requests': AssignmentRequestDao.current_requests_by_member(member),
+        'assignment_requests': AssignmentRequest.objects.filter(member=member).pending(),
         'form': assignment_request_form,
-        'sent': sent
     }
-    return render(request, "assignment_request/request_assignment.html", renderdict)
+    return render(request, "assignment_request/request.html", renderdict)
 
 
 @login_required
@@ -46,37 +54,48 @@ def delete_request_assignment(request, request_id):
     if assignment_request.member == request.user.member\
             and not assignment_request.assignment:
         assignment_request.delete()
-    return redirect('ar-request-assignment')
+    return redirect('juntagrico-assignment-request:request')
 
 
 @login_required
 @highlighted_menu('request_assignment')
-def edit_request_assignment(request, request_id):
+def edit_request_assignment(request, request_id, text_override=None):
     """
     Edit and assignment request
     """
 
+    text = dict(
+        changed=_("Deine Änderungen wurden gespeichert."),
+        rerequested=_("Deine Änderungen wurden gespeichert und zur (erneuten) Bestätigung verschickt.")
+    )
+    text.update(text_override or {})
+
     member = request.user.member
     assignment_request = get_object_or_404(AssignmentRequest, id=request_id, member=member)
+    old_amount = assignment_request.get_amount()
+    old_approver = assignment_request.approver
     assignment_request_form = AssignmentRequestForm(request.POST or None, instance=assignment_request)
     if request.method == 'POST' and assignment_request_form.is_valid():
         # edit request
-        assignment_request = assignment_request_form.instance
-        assignment_request.status = AssignmentRequest.REQUESTED
-        assignment_request.save()
-        adminnotification.request_changed(assignment_request)
-        return redirect('ar-assignment-requested')
+        new_request = assignment_request_form.instance
+        if new_request.get_amount() > old_amount:
+            # if significant changes were made re-approval is needed
+            new_request.status = AssignmentRequest.REQUESTED
+            new_request.save()
+            adminnotification.request_changed(new_request)
+            messages.success(request, text['rerequested'])
+        else:
+            if new_request.status is not AssignmentRequest.REQUESTED:
+                # keep approver, if they replied already
+                new_request.approver = old_approver
+            new_request.save()
+            messages.success(request, text['changed'])
+        return redirect('juntagrico-assignment-request:request')
 
     renderdict = {
         'form': assignment_request_form,
     }
-    return render(request, "assignment_request/edit_assignment_request.html", renderdict)
-
-
-def filter_approver(user):
-    if user.has_perm('juntagrico_assignment_request.notified_on_unapproved_assignments'):
-        return Q(approver=user.member) | Q(approver__isnull=True)
-    return Q(approver=user.member)
+    return render(request, "assignment_request/edit.html", renderdict)
 
 
 @permission_required('juntagrico_assignment_request.can_confirm_assignments')
@@ -84,30 +103,40 @@ def list_assignment_requests(request):
     """
     List assignment requests
     """
-    ar = AssignmentRequest.objects.filter(status=AssignmentRequest.REQUESTED).filter(filter_approver(request.user))
+    ar = AssignmentRequest.objects.filter(status=AssignmentRequest.REQUESTED).for_approver(request.user.member)
     renderdict = {
         'assignment_requests': ar,
     }
-    return render(request, "assignment_request/list_assignment_requests.html", renderdict)
+    return render(request, "assignment_request/list.html", renderdict)
 
 
 @permission_required('juntagrico_assignment_request.can_confirm_assignments')
 def list_archive(request):
-    ar = AssignmentRequest.objects.exclude(status=AssignmentRequest.REQUESTED).filter(filter_approver(request.user))
+    ar = AssignmentRequest.objects.exclude(status=AssignmentRequest.REQUESTED).for_approver(request.user.member)
     renderdict = {
         'assignment_requests': ar,
         'archive': True
     }
-    return render(request, "assignment_request/list_assignment_requests.html", renderdict)
+    return render(request, "assignment_request/list.html", renderdict)
 
 
 @permission_required('juntagrico_assignment_request.can_confirm_assignments')
-def respond_assignment_request(request, request_id):
+def respond_assignment_request(request, request_id, text_override=None):
     """
     Confirm or reject an assignment request
     """
 
+    text = dict(
+        replied=_("Antwort gesendet."),
+        already_replied=_("Die Anfrage wurde bereits beantwortet.")
+    )
+    text.update(text_override or {})
+
     assignment_request = get_object_or_404(AssignmentRequest, id=request_id)
+    if assignment_request.status != AssignmentRequest.REQUESTED:
+        messages.warning(request, text['already_replied'])
+        return redirect('juntagrico-assignment-request:list')
+
     assignment_response_form = AssignmentResponseForm(request.POST or None, instance=assignment_request)
     if request.method == 'POST' and assignment_response_form.is_valid():
         assignment_request = assignment_response_form.instance
@@ -120,20 +149,27 @@ def respond_assignment_request(request, request_id):
         assignment_request.approver = request.user.member
         assignment_request.save()
         membernotification.request_handled(assignment_request)
-        return redirect('ar-list-assignment-requests')
+        messages.success(request, text['replied'])
+        return redirect('juntagrico-assignment-request:list')
 
     renderdict = {
         'assignment_request': assignment_request,
         'form': assignment_response_form,
     }
-    return render(request, "assignment_request/respond_assignment_request.html", renderdict)
+    return render(request, "assignment_request/respond.html", renderdict)
 
 
 @permission_required('juntagrico_assignment_request.can_confirm_assignments')
-def confirm_assignment_request(request, request_id):
+def confirm_assignment_request(request, request_id, text_override=None):
     """
     Confirm an assignment request directly
     """
+    text = dict(
+        confirmed=_("Anfrage bestätigt."),
+        already_confirmed=_("Anfrage bereits bestätigt.")
+    )
+    text.update(text_override or {})
+
     assignment_request = get_object_or_404(AssignmentRequest, id=request_id)
     if not assignment_request.is_confirmed():
         assignment_request.response_date = date.today()
@@ -144,4 +180,7 @@ def confirm_assignment_request(request, request_id):
         assignment_request.approver = request.user.member
         assignment_request.save()
         membernotification.request_handled(assignment_request)
-    return redirect('ar-list-assignment-requests')
+        messages.success(request, text['confirmed'])
+    else:
+        messages.warning(request, text['already_confirmed'])
+    return redirect('juntagrico-assignment-request:list')

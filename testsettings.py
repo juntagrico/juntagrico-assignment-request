@@ -15,9 +15,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.admin',
+    'juntagrico_assignment_request',
     'juntagrico',
     'crispy_forms',
-    'juntagrico_assignment_request',
+    'import_export',
+    'adminsortable2',
+    'polymorphic',
+    'fontawesomefree',
 ]
 
 DATABASES = {
@@ -109,22 +113,17 @@ TEMPLATES = [
     },
 ]
 
-LOGIN_REDIRECT_URL = "/my/home"
+LOGIN_REDIRECT_URL = "/"
 
 SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
 
-
-GOOGLE_API_KEY = 'AIzaSyCcii4Z71qyky54kEQtRhFbB_z-2zbSU28'
-
-BILLING = True
-
-CACHES = {
-        'default': {
-            'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
-            'LOCATION': 'juntagrico_app_cache_table',
-            'TIMEOUT': None,
-        }
-    }
-
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 CRISPY_FAIL_SILENTLY = not DEBUG
+
+
+# Example usage of ASSIGNMENT_REQUEST_AREAS
+def only_visible(queryset):
+    return queryset.filter(hidden=False)
+
+
+ASSIGNMENT_REQUEST_AREAS = only_visible

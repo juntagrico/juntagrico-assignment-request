@@ -10,7 +10,6 @@
 [![image](https://img.shields.io/pypi/dm/juntagrico_assignment_request.svg)](https://pypi.python.org/pypi/juntagrico_assignment_request/)
 [![image](https://img.shields.io/github/last-commit/juntagrico/juntagrico-assignment-request.svg)](https://github.com/juntagrico/juntagrico-assignment-request)
 [![image](https://img.shields.io/github/commit-activity/y/juntagrico/juntagrico-assignment-request)](https://github.com/juntagrico/juntagrico-assignment-request)
-[![Requirements Status](https://requires.io/github/juntagrico/juntagrico-assignment-request/requirements.svg?branch=main)](https://requires.io/github/juntagrico/juntagrico-assignment-request/requirements/?branch=main)
 
 This is an extension for juntagrico. You can find more information about juntagrico here
 (https://github.com/juntagrico/juntagrico)
@@ -20,20 +19,39 @@ It allows members to request assignments for jobs they have done, that were not 
 ## Installation
 
 1. Add `juntagrico-assignment-request` to your `requirements.txt`
-2. Add `'juntagrico_assignment_request',` to the `INSTALLED_APPS` in your `settings.py`
+2. Add `'juntagrico_assignment_request',` to the `INSTALLED_APPS` in your `settings.py` **above** `juntagrico`
 3. Add `path(r'', include('juntagrico_assignment_request.urls')),` at the end of your `urls.py`
 4. Redeploy your project (and apply migrations)
 
 ## Configuration
 
-When requesting an assignment, members can select the person that can confirm that they did a job.
+When requesting an assignment, members can select the person (confirmer) that can confirm that they did a job.
 To add people to this selection you will have to add this permission to that user: `juntagrico_assignment_request | Arbeitseinsatz Anfrage | Kann selbständige Arbeitseinsätze bestätigen`
+
+If you want to allow an activity area coordinator to confirm requests, but only on the areas they coordinate,
+add this permission to that user: `juntagrico_assignment_request | Arbeitseinsatz Anfrage | Kann selbständige Arbeitseinsätze im eigenen Tätigkeitsbereich bestätigen`
 
 Only the selected confirmer, will be informed about the request by email and can see the request.
 
 If members don't select any confirmer all users with the following permission will receive a notification and can see the request: `juntagrico_assignment_request | Arbeitseinsatz Anfrage | Wird über nicht abgesprochene Arbeitseinsätze informiert`
 
 The [ASSIGNMENT_UNIT](https://juntagrico.readthedocs.io/en/latest/settings.html?highlight=ASSIGNMENT_UNIT#assignment-unit) setting is respected.
+
+### ASSIGNMENT_REQUEST_AREAS
+
+If you need to limit the activity areas that can be selected in the requests,
+set this setting to a function, that takes an `ActivityArea` queryset as the first argument
+and returns a filtered queryset.
+By default, all activity areas can be selected.
+
+Example: Include only visible activity areas:
+
+```python
+def only_visible(queryset):
+    return queryset.filter(hidden=False)
+
+ASSIGNMENT_REQUEST_AREAS = only_visible
+```
 
 ## Usage
 
@@ -50,29 +68,6 @@ The [ASSIGNMENT_UNIT](https://juntagrico.readthedocs.io/en/latest/settings.html?
 The extension creates job types and jobs on the fly behind the scenes as they are needed to create the assignments and show them to the member that made them.
 In order to not clutter the admin views with automatically generated content, these jobs and job types are hidden.
 As a side effect there will be assignments that have a valid job link, but when you follow that job, you will be told that no job with the given id exists.
-
-## Release Notes
-
-## 1.5
-
-Upgrade to Juntagrico 1.5
-
-## 1.4
-
-Upgrade to Juntagrico 1.4
-
-### 1.4.1
-
-* Fix error when deleting selected jobs in the django admin
-
-### 1.4.2
-
-* Consistently use vocabulary for the word "assignment(s)"
-* Support for assignment unit HOURS
-
-### 1.4.3
-
-* Compatibility to juntagrico>=1.4.6
 
 ## Screenshots
 
@@ -99,4 +94,3 @@ Confirmation by mail for the requester
 The assignment appears in the list
 
 ![New menu entry](doc/06_assignment_list.png)
-

@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% load static %}
+{% load i18n %}
+{% load juntagrico.config %}
+{% load crispy_forms_tags %}
+
+{% block page_title %}
+   {% vocabulary "assignment" as v_assignment %}
+    <div class="page-title col-md-12">
+        <h3>
+            {% blocktrans %}{{ v_assignment }} melden{% endblocktrans %}
+        </h3>
+    </div>
+{% endblock %}
+{% block content %}  
+    {% vocabulary "assignment" as v_assignment %}
+    {% vocabulary "assignment_pl" as v_assignment_pl %}
+    {% include "assignment_request/snippets/messages.html" %}
+    
+    <div class="col-md-12 mb-4">
+        {% block instructions %}
+            {% blocktrans %}
+                Hier kannst du deine {{ v_assignment_pl }} melden. 
+                Dies gilt für Termine, die nicht mit einer festgelegten Arbeitszeit buchbar sind aber auch
+                für selbständige Einsätze. Bitte sprich dich vorgängig mit einer Gartenfachkraft
+                oder einer/m Arbeitsgruppen-KoordinatorIn ab, wenn du selbständige Einsätze machen willst.
+            {% endblocktrans %}
+        {% endblock %}
+    </div>
+
+    <div class="col-md-12 mb-4">
+        <h4>
+            {% blocktrans %}Neue Anfrage erstellen{% endblocktrans %}
+        </h4>
+    </div>
+    <div class="col-md-12 mb-4">
+        <form action="" method="post" id="request_assignment">
+            {% crispy form %}
+        </form>
+    </div>
+
+    {% if assignment_requests %}
+    <div class="col-md-12 mb-4">
+        <h4>
+            {% blocktrans %}Gemeldete {{ v_assignment_pl }}{% endblocktrans %}
+        </h4>
+    </div>
+    <div class="col-md-12 mb-4">
+        {% blocktrans %}Diese {{ v_assignment_pl }} hast du schon gemeldet{% endblocktrans %}
+
+        <table id="filter-table" class="list table" style="display: table;">
+            <thead>
+                <tr>
+                    <th class="align-top">
+                        {% trans "Einsatz vom" %}
+                    </th>
+                    <th class="align-top">
+                        {% trans "Abgesprochen mit" %}
+                    </th>
+                    <th class="align-top">
+                        {% trans "Status" %}
+                    </th>
+                    <th class="align-top">
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for assignment_request in assignment_requests %}
+                    <tr>
+                        <td>
+                            {{ assignment_request.job_time|date:"d.m.Y H:i" }}
+                        </td>
+                        <td>
+                            {{ assignment_request.approver|default:"Niemandem" }}
+                        </td>
+                        <td>
+                            {% if assignment_request.assignment.job %}
+                                <a href="{% url 'job' assignment_request.assignment.job.id %}">{{ assignment_request.get_status_display }}</a>
+                            {% else %}
+                                {{ assignment_request.get_status_display }}
+                            {% endif %}
+                        </td>
+                        <td class="text-nowrap">
+                            <a href="{% url 'juntagrico-assignment-request:edit' assignment_request.id %}"
+                               class="edit"><i class="fas fa-pen"></i></a>
+                            {% if not assignment_request.is_confirmed %}
+                            <a href="{% url 'juntagrico-assignment-request:delete' assignment_request.id %}"
+                               onclick="return confirm('{% trans 'Bist du sicher, dass du die Anfrage löschen möchtest' %}');"
+                               class="delete"><i class="fas fa-trash"></i></a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr class="ar-assignment-request-description">
+                        <td colspan="3">
+                            <p>{% trans "Beschreibung" %}: {{ assignment_request.description }}</p>
+                            {% if assignment_request.response %}<p>{% trans "Antwort" %}: {{ assignment_request.response }}</p>{% endif %}
+                        <td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% blocktrans %}Es werden nur erledigte Anfragen von dieser Saison und alle offenen Anfragen angezeigt.{% endblocktrans %}
+    </div>
+    {% endif %}
+{% endblock %}
+
+{% block scripts %}
+    {{ form.approvers_by_area|json_script:'approvers_data' }}
+    <script type="text/javascript" src="{% static 'juntagrico_assignment_request/js/request.js' %}"></script>
+{% endblock %}
