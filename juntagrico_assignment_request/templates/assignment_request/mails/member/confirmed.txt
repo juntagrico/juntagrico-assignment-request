@@ -1,12 +1,12 @@
 {% extends "mails/email.txt" %}
 {% load juntagrico.config %}
-{% block content %}
+{% block content %}{% vocabulary 'assignment' as v_assignment %}
 Soeben hat {{ assignment_request.approver }} deine Anfrage angenommen.
 {% if assignment_request.response %}
 Antwort: "{{ assignment_request.response }}"
 {% endif %}
 
-Es geht um folgende/n/s {% vocabulary 'assignment' %}:
+Es geht um folgende/n/s {{ v_assignment }}:
     {{ serverurl }}{% url 'job' assignment_request.assignment.job.id %}
 {% include "assignment_request/mails/snippets/summary.txt" %}
 {% if assignment_request.description %}

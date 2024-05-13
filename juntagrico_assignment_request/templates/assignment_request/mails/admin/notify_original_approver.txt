@@ -10,7 +10,7 @@ Antwort: "{{ assignment_request.response }}"{% endif %}
 
 {{ assignment_request.member }} hatte zuletzt dich als Referenzperson angegeben.
 
-Es geht um folgende/n/s {% vocabulary 'assignment' %}:
+Es geht um folgende/n/s {{ v_assignment }}:
 {% include "assignment_request/mails/snippets/summary.txt" %}
 {% if assignment_request.description %}
 Beschreibung:

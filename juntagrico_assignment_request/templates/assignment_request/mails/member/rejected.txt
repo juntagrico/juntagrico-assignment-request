@@ -1,10 +1,10 @@
 {% extends "mails/email.txt" %}
 {% load juntagrico.config %}
-{% block content %}
+{% block content %}{% vocabulary 'assignment' as v_assignment %}
 Soeben hat {{ assignment_request.approver }} deine Anfrage mit folgender Begründung abgelehnt:
 "{{ assignment_request.response }}"
 
-Es geht um folgende/n/s {% vocabulary 'assignment' %}:
+Es geht um folgende/n/s {{ v_assignment }}:
 {% include "assignment_request/mails/snippets/summary.txt" %}
 {% if assignment_request.description %}
 Du hattest bei der Anfrage folgende Mitteilung hinterlassen:
