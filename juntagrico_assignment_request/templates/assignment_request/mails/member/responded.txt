@@ -1,0 +1,17 @@
+{% extends "mails/email.txt" %}
+{% load juntagrico.config %}
+{% block content %}{% vocabulary 'assignment' as v_assignment %}
+Soeben hat {{ assignment_request.approver }} eine Rückfrage auf deine Anfrage verfasst:
+"{{ assignment_request.response }}"
+
+Es geht um folgende/n/s {{ v_assignment }}:
+{% include "assignment_request/mails/snippets/summary.txt" %}
+{% if assignment_request.description %}
+Du hattest bei der Anfrage folgende Mitteilung hinterlassen:
+"{{ assignment_request.description }}"
+{% endif %}
+
+Du kannst auf die Rückfrage antworten, indem du hier die Anfrage anpasst:
+{{ serverurl }}{% url 'juntagrico-assignment-request:edit' assignment_request.id %}
+{% endblock %}
+

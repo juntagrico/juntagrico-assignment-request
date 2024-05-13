@@ -1,0 +1,20 @@
+{% extends "mails/email.txt" %}
+{% load juntagrico.config %}
+{% block content %}
+  {% vocabulary "assignment" as v_assignment %}
+  {% vocabulary "assignment_pl" as v_assignment_pl %}
+Soeben hat {{ new_approver }} die {{ v_assignment }}-Anfrage von {{ assignment_request.member }} beantwortet und dir die Arbeit abgenommen.
+{% if assignment_request.response %}
+Entscheidung: {{ assignment_request.get_status_display }}
+Antwort: "{{ assignment_request.response }}"{% endif %}
+
+{{ assignment_request.member }} hatte zuletzt dich als Referenzperson angegeben.
+
+Es geht um folgende/n/s {{ v_assignment }}:
+{% include "assignment_request/mails/snippets/summary.txt" %}
+{% if assignment_request.description %}
+Beschreibung:
+"{{ assignment_request.description }}"
+{% endif %}
+
+{% endblock %}

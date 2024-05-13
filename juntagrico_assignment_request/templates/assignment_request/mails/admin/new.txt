@@ -1,0 +1,21 @@
+{% extends "mails/email.txt" %}
+{% load juntagrico.config %}
+{% block content %}
+  {% vocabulary "assignment" as v_assignment %}
+  {% vocabulary "assignment_pl" as v_assignment_pl %}
+Soeben hat {{ assignment_request.member }} {{ assignment_request.amount }} {{ v_assignment_pl }} mit folgender Mitteilung beantragt:
+"{{ assignment_request.description }}"
+
+{% include "assignment_request/mails/snippets/summary.txt" %}
+{% if assignment_request.approver %}
+    Laut {{ assignment_request.member }} wurde das mit dir abgesprochen.
+{% else %}
+    {{ assignment_request.member }} hat keine Referenzperson angegeben.
+{% endif %}
+
+Bestätige ohne Kommentar
+{{ serverurl }}{% url 'juntagrico-assignment-request:confirm' assignment_request.id %}
+oder schreibe zuerst eine Antwort an {{ assignment_request.member }}:
+{{ serverurl }}{% url 'juntagrico-assignment-request:respond' assignment_request.id %}
+{% endblock %}
+

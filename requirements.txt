@@ -1,1 +1,4 @@
-juntagrico~=1.5.0
+-e .
+ruff
+coverage
+django_coverage_plugin
