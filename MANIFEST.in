@@ -1,5 +1,6 @@
 include LICENSE
 include README.md
+recursive-include juntagrico_assignment_request/static *
 recursive-include juntagrico_assignment_request/templates *
 include requirements.txt
 global-exclude *.pyc
