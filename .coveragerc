@@ -1,5 +1,5 @@
 [run]
 include =
-    juntagrico_billing/*
+    juntagrico_assignment_request/*
 omit =
-    juntagrico_billing/migrations/*
+    juntagrico_assignment_request/migrations/*
