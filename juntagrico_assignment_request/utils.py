@@ -3,12 +3,20 @@ from django.db.models import Q
 from juntagrico.entity.member import Member
 
 
-def get_approvers(general_only=False):
+def get_approvers(general_only=False, area_only=False):
     general = Permission.objects.get(codename='can_confirm_assignments')
     area = Permission.objects.get(codename='can_confirm_assignments_for_area')
-    query = Q(user__groups__permissions=general) | Q(user__user_permissions=general)
-    if not general_only:
-        query |= (Q(user__groups__permissions=area) | Q(user__user_permissions=area)) & Q(activityarea__isnull=False)
+    general_query = Q(user__groups__permissions=general) | Q(user__user_permissions=general)
+    area_query = (Q(user__groups__permissions=area) | Q(user__user_permissions=area)) & Q(activityarea__isnull=False)
+    if general_only:
+        if area_only:
+            return Member.objects.none()
+        else:
+            query = general_query
+    elif area_only:
+        query = area_query & ~general_query
+    else:
+        query = general_query | area_query  # include all
     return Member.objects.filter(query).distinct()
 
 

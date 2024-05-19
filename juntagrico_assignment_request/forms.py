@@ -43,11 +43,10 @@ class AssignmentRequestForm(ModelForm):
         return qs
 
     def approvers_by_area(self):
-        general_approvers = get_approvers(general_only=True)
+        area_approvers = get_approvers(area_only=True)
         approvers = {
-            area.id: area.coordinator.id
-            for area in self.fields['activityarea'].queryset
-            if area.coordinator in self.fields['approver'].queryset and area.coordinator not in general_approvers
+            approver.id: [area.id for area in approver.activityarea_set.filter(pk__in=self.fields['activityarea'].queryset)]
+            for approver in area_approvers
         }
         return approvers
 
