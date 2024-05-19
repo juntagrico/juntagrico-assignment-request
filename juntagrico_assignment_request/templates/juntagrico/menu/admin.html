@@ -2,11 +2,13 @@
 {% load i18n %}
 {% load juntagrico.config %}
 {% block extend %}
-    <li class="nav-item">
-        {% vocabulary "assignment_pl" as v_assignment_pl %}
-        <a class="nav-link" href="{% url 'juntagrico-assignment-request:list' %}">
-            {% blocktrans %}Angemeldete {{ v_assignment_pl }}{% endblocktrans %}
-        </a>
-    </li>
+    {% if perms.juntagrico_assignment_request.can_confirm_assignments_for_area or perms.juntagrico_assignment_request.can_confirm_assignments%}
+        <li class="nav-item">
+            {% vocabulary "assignment_pl" as v_assignment_pl %}
+            <a class="nav-link" href="{% url 'juntagrico-assignment-request:list' %}">
+                {% blocktrans %}Angemeldete {{ v_assignment_pl }}{% endblocktrans %}
+            </a>
+        </li>
+    {% endif %}
     {{ block.super }}
 {% endblock %}
