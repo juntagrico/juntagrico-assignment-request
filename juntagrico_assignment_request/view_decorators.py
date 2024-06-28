@@ -16,7 +16,7 @@ def approver_for_request_required(view):
             # general approver can approve any request.
             return view(request, request_id, *args, **kwargs)
         elif request.user.has_perm('juntagrico_assignment_request.can_confirm_assignments_for_area'):
-            # Not: this is made robust for case that area coordinator changes between request and approval.
+            # Note: this is made robust for case that area coordinator changes between request and approval.
             if AssignmentRequest.objects.filter(id=request_id, approver=request.user.member).exists():
                 # approver of area can only approve requests to them.
                 return view(request, request_id, *args, **kwargs)
