@@ -1,7 +1,7 @@
 from datetime import date
 
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.translation import gettext as _
 
@@ -10,6 +10,7 @@ from juntagrico.view_decorators import highlighted_menu
 from juntagrico_assignment_request.forms import AssignmentRequestForm, AssignmentResponseForm
 from juntagrico_assignment_request.mailer import membernotification, adminnotification
 from juntagrico_assignment_request.models import AssignmentRequest
+from juntagrico_assignment_request.view_decorators import approver_required, approver_for_request_required
 
 
 @login_required
@@ -98,7 +99,7 @@ def edit_request_assignment(request, request_id, text_override=None):
     return render(request, "assignment_request/edit.html", renderdict)
 
 
-@permission_required('juntagrico_assignment_request.can_confirm_assignments')
+@approver_required
 def list_assignment_requests(request):
     """
     List assignment requests
@@ -110,7 +111,7 @@ def list_assignment_requests(request):
     return render(request, "assignment_request/list.html", renderdict)
 
 
-@permission_required('juntagrico_assignment_request.can_confirm_assignments')
+@approver_required
 def list_archive(request):
     ar = AssignmentRequest.objects.exclude(status=AssignmentRequest.REQUESTED).for_approver(request.user.member)
     renderdict = {
@@ -120,7 +121,7 @@ def list_archive(request):
     return render(request, "assignment_request/list.html", renderdict)
 
 
-@permission_required('juntagrico_assignment_request.can_confirm_assignments')
+@approver_for_request_required
 def respond_assignment_request(request, request_id, text_override=None):
     """
     Confirm or reject an assignment request
@@ -159,7 +160,7 @@ def respond_assignment_request(request, request_id, text_override=None):
     return render(request, "assignment_request/respond.html", renderdict)
 
 
-@permission_required('juntagrico_assignment_request.can_confirm_assignments')
+@approver_for_request_required
 def confirm_assignment_request(request, request_id, text_override=None):
     """
     Confirm an assignment request directly
