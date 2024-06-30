@@ -25,6 +25,12 @@ class AssignmentRequestTestCase(JuntagricoTestCase):
         cls.approver2.user.user_permissions.add(
             Permission.objects.get(codename='notified_on_unapproved_assignments'))
         cls.approver2.user.save()
+        cls.area_admin.user.user_permissions.add(
+            Permission.objects.get(codename='can_confirm_assignments_for_area'))
+        cls.area_admin.user.save()
+        cls.member2.user.user_permissions.add(
+            Permission.objects.get(codename='can_confirm_assignments_for_area'))
+        cls.member2.user.save()
 
     @classmethod
     def assignment_request_data(cls, approver=None, for_form=False, approved=False, **kwargs):

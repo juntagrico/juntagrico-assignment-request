@@ -1,21 +1,8 @@
-from django.contrib.auth.models import Permission
-
 from . import AssignmentRequestTestCase
 from ..utils import get_approvers
 
 
 class AdminTests(AssignmentRequestTestCase):
-
-    @classmethod
-    def setUpTestData(cls):
-        super().setUpTestData()
-        cls.area_admin.user.user_permissions.add(
-            Permission.objects.get(codename='can_confirm_assignments_for_area'))
-        cls.area_admin.user.save()
-        cls.member2.user.user_permissions.add(
-            Permission.objects.get(codename='can_confirm_assignments_for_area'))
-        cls.member2.user.save()
-
     def test_get_approvers(self):
         approvers = get_approvers()
         self.assertQuerysetEqual(approvers, [self.approver, self.approver2, self.area_admin],

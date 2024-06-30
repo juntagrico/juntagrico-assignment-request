@@ -61,23 +61,46 @@ class AssignmentRequestTests(AssignmentRequestTestCase):
         AssignmentRequest.objects.create(**self.assignment_request_data(self.approver))  # display at least one ar
         self.assertGet(reverse('juntagrico-assignment-request:list'), 302)  # normal member has no access
         self.assertGet(reverse('juntagrico-assignment-request:list'), member=self.approver)
+        self.assertGet(reverse('juntagrico-assignment-request:list'), member=self.area_admin)
+        self.assertGet(reverse('juntagrico-assignment-request:list'), member=self.member2)
 
     def test_assignment_request_archive(self):
         AssignmentRequest.objects.create(**self.assignment_request_data(self.approver))  # display at least one ar
         self.assertGet(reverse('juntagrico-assignment-request:archive'), 302)  # normal member has no access
         self.assertGet(reverse('juntagrico-assignment-request:archive'), member=self.approver)
+        self.assertGet(reverse('juntagrico-assignment-request:archive'), member=self.area_admin)
+        self.assertGet(reverse('juntagrico-assignment-request:archive'), member=self.member2)
 
     def test_assignment_confirmation(self):
         ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.approver))
-        self.assertGet(reverse('juntagrico-assignment-request:confirm', args=(ar.pk,)), 302)  # member can not approve
+        # normal member can not approve
+        self.assertGet(reverse('juntagrico-assignment-request:confirm', args=(ar.pk,)), 302)
         ar.refresh_from_db()
         self.assertEqual(ar.status, AssignmentRequest.REQUESTED)
+        # area approvers can not approve this request
+        self.assertGet(reverse('juntagrico-assignment-request:confirm', args=(ar.pk,)), 302, member=self.member2)
+        ar.refresh_from_db()
+        self.assertEqual(ar.status, AssignmentRequest.REQUESTED)
+        self.assertGet(reverse('juntagrico-assignment-request:confirm', args=(ar.pk,)), 302, member=self.area_admin)
+        ar.refresh_from_db()
+        self.assertEqual(ar.status, AssignmentRequest.REQUESTED)
+        # general approver can confirm
         self.assertGet(reverse('juntagrico-assignment-request:confirm', args=(ar.pk,)), 302, member=self.approver)
         ar.refresh_from_db()
         self.assertEqual(ar.status, AssignmentRequest.CONFIRMED)
         self.assertEqual(ar.assignment.amount, ar.get_amount())
         self.assertEqual(len(mail.outbox), 1)  # confirmation email to user
         self.assertEqual(mail.outbox[0].to[0], self.member.email)
+
+    def test_assignment_confirmation_in_area(self):
+        ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.area_admin))
+        # approver for other area can not confirm can not approve
+        self.assertGet(reverse('juntagrico-assignment-request:confirm', args=(ar.pk,)), 302, member=self.member2)
+        ar.refresh_from_db()
+        self.assertEqual(ar.status, AssignmentRequest.REQUESTED)
+        self.assertGet(reverse('juntagrico-assignment-request:confirm', args=(ar.pk,)), 302, member=self.area_admin)
+        ar.refresh_from_db()
+        self.assertEqual(ar.status, AssignmentRequest.CONFIRMED)
 
     def test_edit_approved_assignment_of_request(self):
         ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.approver, approved=True))
@@ -101,6 +124,18 @@ class AssignmentRequestTests(AssignmentRequestTestCase):
 
     def assignment_response(self, decision='submit', expected_status=AssignmentRequest.REQUESTED):
         ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.approver))
+        # area approvers can not reply to this.
+        self.assertPost(reverse('juntagrico-assignment-request:respond', args=(ar.pk,)),
+                        self.assignment_response_data(decision), 302, member=self.member2)
+        ar.refresh_from_db()
+        self.assertEqual(ar.status, AssignmentRequest.REQUESTED)
+        self.assertEqual(len(mail.outbox), 0)
+        self.assertPost(reverse('juntagrico-assignment-request:respond', args=(ar.pk,)),
+                        self.assignment_response_data(decision), 302, member=self.area_admin)
+        ar.refresh_from_db()
+        self.assertEqual(ar.status, AssignmentRequest.REQUESTED)
+        self.assertEqual(len(mail.outbox), 0)
+        # only general approver can
         self.assertPost(reverse('juntagrico-assignment-request:respond', args=(ar.pk,)),
                         self.assignment_response_data(decision), 302, member=self.approver)
         ar.refresh_from_db()
@@ -113,3 +148,16 @@ class AssignmentRequestTests(AssignmentRequestTestCase):
 
     def test_assignment_rejection(self):
         self.assignment_response('reject', AssignmentRequest.REJECTED)
+
+    def test_assignment_response_in_area(self):
+        ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.area_admin))
+        # approver for other area can not confirm can not respond
+        self.assertPost(reverse('juntagrico-assignment-request:respond', args=(ar.pk,)),
+                        self.assignment_response_data('submit'), 302, member=self.member2)
+        ar.refresh_from_db()
+        self.assertEqual(ar.status, AssignmentRequest.REQUESTED)
+        self.assertEqual(len(mail.outbox), 0)
+        self.assertPost(reverse('juntagrico-assignment-request:respond', args=(ar.pk,)),
+                        self.assignment_response_data('submit'), 302, member=self.area_admin)
+        ar.refresh_from_db()
+        self.assertEqual(len(mail.outbox), 1)
