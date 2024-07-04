@@ -111,10 +111,11 @@ class AssignmentRequest(models.Model):
         """
         Callback before saving assignment request
         """
-        if instance.status == cls.CONFIRMED:
-            cls._create_or_update_assignment(instance)
-        else:
-            instance.assignment = None  # assignment object will be deleted after saving
+        if not kwds.get('raw', False):
+            if instance.status == cls.CONFIRMED:
+                cls._create_or_update_assignment(instance)
+            else:
+                instance.assignment = None  # assignment object will be deleted after saving
 
     def set_activityarea_if_none(self):
         # create/use default activity_area if none specified
