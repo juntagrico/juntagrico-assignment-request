@@ -38,9 +38,10 @@ def pre_save_assignment(sender, instance, **kwds):
     """
     If assignment comes from request, change back values as before saving it
     """
-    if hasattr(instance, 'assignmentrequest'):
-        ar = instance.assignmentrequest
-        instance.member = ar.member
-        instance.amount = ar.get_amount()
-        instance.job = ar.get_matching_job()
-        print(f'restored {instance} using {ar}')
+    if not kwds.get('raw', False):
+        if hasattr(instance, 'assignmentrequest'):
+            ar = instance.assignmentrequest
+            instance.member = ar.member
+            instance.amount = ar.get_amount()
+            instance.job = ar.get_matching_job()
+            print(f'restored {instance} using {ar}')
