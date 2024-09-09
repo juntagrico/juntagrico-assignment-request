@@ -43,6 +43,6 @@ include = ["juntagrico_assignment_request*"]
 [tool.setuptools.dynamic]
 version = {attr = "juntagrico_assignment_request.__version__"}
 
-[tool.ruff]
+[tool.ruff.lint]
 select = ["E", "F", "B"]
 ignore = ["E501"]

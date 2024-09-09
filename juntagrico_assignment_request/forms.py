@@ -54,7 +54,7 @@ class AssignmentRequestForm(ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['approver'].queryset = get_approvers()
         self.fields['activityarea'].queryset = self.activityarea_queryset()
-        self.fields['duration'].widget.attrs['step'] = 1.0
+        self.fields['duration'].widget.attrs['step'] = 'any'
         self.fields['job_time'].widget = DateTimeWidget()
         self.helper = FormHelper()
         self.helper.form_class = 'form-horizontal'
@@ -88,7 +88,7 @@ class AssignmentResponseForm(ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['duration'].widget.attrs['step'] = 1.0
+        self.fields['duration'].widget.attrs['step'] = 'any'
         self.helper = FormHelper()
         self.helper.form_class = 'form-horizontal'
         self.helper.label_class = 'col-md-3'
