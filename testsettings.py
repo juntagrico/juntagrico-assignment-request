@@ -125,5 +125,6 @@ CRISPY_FAIL_SILENTLY = not DEBUG
 def only_visible(queryset):
     return queryset.filter(hidden=False)
 
+ENABLE_SHARES = True
 
 ASSIGNMENT_REQUEST_AREAS = only_visible
