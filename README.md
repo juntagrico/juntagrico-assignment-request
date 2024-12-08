@@ -53,6 +53,14 @@ def only_visible(queryset):
 ASSIGNMENT_REQUEST_AREAS = only_visible
 ```
 
+### Template Blocks
+
+See [docs](https://juntagrico.readthedocs.io/en/latest/reference/templates.html#set-up-template-overrides) on how to set up template overrides
+
+#### template/assignments_request/request.html|instructions
+
+Change the instructions at the top of the request form
+
 ## Usage
 
 1. Members will see a new entry in the menu to request assignments
