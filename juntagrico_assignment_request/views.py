@@ -3,6 +3,7 @@ from datetime import date
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
+from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 
 from juntagrico.view_decorators import highlighted_menu
@@ -34,7 +35,7 @@ def request_assignment(request, text_override=None):
         assignment_request.member = member
         assignment_request.save()
         adminnotification.request_created(assignment_request)
-        messages.success(request, text['request_sent'])
+        messages.success(request, mark_safe(text['request_sent']))
         # do a redirect to avoid resending on reloading
         return redirect('juntagrico-assignment-request:request')
 

@@ -17,7 +17,7 @@ from juntagrico.util.temporal import start_of_business_year
 
 class AssignmentQueryset(models.QuerySet):
     def pending(self):
-        # assignment requests that have not been replied yet or ar from the current business year
+        # assignment requests that have not been replied yet or are from the current business year
         start = datetime.combine(start_of_business_year(), datetime_time.min, tzinfo=get_default_timezone())
         return self.filter(Q(status=AssignmentRequest.REQUESTED) | Q(job_time__gte=start))
 
