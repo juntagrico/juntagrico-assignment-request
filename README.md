@@ -85,7 +85,7 @@ New menu entry
 
 Request Form
 
-![Request Form](doc/02_request_form)
+![Request Form](doc/02_request_form.png)
 
 Overview about reported assignments
 
