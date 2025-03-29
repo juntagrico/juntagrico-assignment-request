@@ -46,7 +46,7 @@
         </h4>
     </div>
     <div class="col-md-12 mb-4">
-        {% blocktrans %}Diese {{ v_assignment_pl }} hast du schon gemeldet{% endblocktrans %}
+        {% blocktrans %}Diese {{ v_assignment_pl }} hast du schon gemeldet (neuste zuerst){% endblocktrans %}
 
         <table id="filter-table" class="list table" style="display: table;">
             <thead>
@@ -65,7 +65,7 @@
                 </tr>
             </thead>
             <tbody>
-                {% for assignment_request in assignment_requests %}
+                {% for assignment_request in assignment_requests reversed %}
                     <tr>
                         <td>
                             {{ assignment_request.job_time|date:"d.m.Y H:i" }}

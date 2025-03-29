@@ -22,8 +22,8 @@ def request_assignment(request, text_override=None):
     """
 
     text = dict(
-        request_sent=mark_safe(_("Deine Anfrage wurde erfolgreich verschickt.<br>"
-                                 "Du wirst per E-Mail benachrichtigt, sobald diese bestätigt wurde."))
+        request_sent=_("Deine Anfrage wurde erfolgreich verschickt.<br>"
+                       "Du wirst per E-Mail benachrichtigt, sobald diese bestätigt wurde.")
     )
     text.update(text_override or {})
 
@@ -35,7 +35,7 @@ def request_assignment(request, text_override=None):
         assignment_request.member = member
         assignment_request.save()
         adminnotification.request_created(assignment_request)
-        messages.success(request, text['request_sent'])
+        messages.success(request, mark_safe(text['request_sent']))
         # do a redirect to avoid resending on reloading
         return redirect('juntagrico-assignment-request:request')
 
