@@ -3,6 +3,7 @@ from datetime import date
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
+from django.utils.safestring import mark_safe
 from django.utils.translation import gettext as _
 
 from juntagrico.view_decorators import highlighted_menu
@@ -21,8 +22,8 @@ def request_assignment(request, text_override=None):
     """
 
     text = dict(
-        request_sent=_("Deine Anfrage wurde erfolgreich verschickt.<br>"
-                       "Du wirst per E-Mail benachrichtigt, sobald diese bestätigt wurde.")
+        request_sent=mark_safe(_("Deine Anfrage wurde erfolgreich verschickt.<br>"
+                                 "Du wirst per E-Mail benachrichtigt, sobald diese bestätigt wurde."))
     )
     text.update(text_override or {})
 
