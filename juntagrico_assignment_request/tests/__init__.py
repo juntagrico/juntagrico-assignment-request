@@ -10,6 +10,7 @@ class AssignmentRequestTestCase(JuntagricoTestCase):
     def setUpTestData(cls):
         # load from fixtures
         cls.load_members()
+        cls.default_member = cls.member
         cls.load_areas()
         cls.set_up_approvers()
 

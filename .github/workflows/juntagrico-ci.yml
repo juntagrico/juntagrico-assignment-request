@@ -15,7 +15,7 @@ jobs:
       CC_TEST_REPORTER_ID: ${{ secrets.CODECOV_TOKEN }}
     strategy:
       matrix:
-        python-version: ['3.9', '3.10', '3.11']
+        python-version: ['3.10', '3.11', '3.12', '3.13', '3.14']
 
     steps:
     - uses: actions/checkout@v4
@@ -28,7 +28,7 @@ jobs:
         pip install --upgrade -r requirements.txt
     - name: ruff
       run: |
-        ruff check juntagrico_assignment_request
+        ruff check --preview juntagrico_assignment_request
     - name: install CodeClimate reporter
       if: ${{ env.CC_TEST_REPORTER_ID != null && github.event_name == 'push'}}
       run: |

@@ -7,7 +7,7 @@ def get_approvers(general_only=False, area_only=False):
     general = Permission.objects.get(codename='can_confirm_assignments')
     area = Permission.objects.get(codename='can_confirm_assignments_for_area')
     general_query = Q(user__groups__permissions=general) | Q(user__user_permissions=general)
-    area_query = (Q(user__groups__permissions=area) | Q(user__user_permissions=area)) & Q(activityarea__isnull=False)
+    area_query = (Q(user__groups__permissions=area) | Q(user__user_permissions=area)) & Q(coordinated_areas__isnull=False)
     if general_only:
         if area_only:
             return Member.objects.none()

@@ -45,7 +45,7 @@ class AssignmentRequestForm(ModelForm):
     def approvers_by_area(self):
         area_approvers = get_approvers(area_only=True)
         approvers = {
-            approver.id: [area.id for area in approver.activityarea_set.filter(pk__in=self.fields['activityarea'].queryset)]
+            approver.id: [area.id for area in approver.coordinated_areas.filter(pk__in=self.fields['activityarea'].queryset)]
             for approver in area_approvers
         }
         return approvers
@@ -72,7 +72,7 @@ class AssignmentRequestForm(ModelForm):
         # check that approver is valid for the selected area
         cleaned_data = super().clean()
         valid_approvers = (get_approvers(general_only=True) |
-                           get_approvers().filter(activityarea=cleaned_data['activityarea']))
+                           get_approvers().filter(coordinated_areas=cleaned_data['activityarea']))
         if cleaned_data['approver'] and cleaned_data['approver'] not in valid_approvers:
             raise ValidationError(_('Ungültige Auswahl bei "Abgesprochen mit"'))
 
