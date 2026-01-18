@@ -48,7 +48,7 @@ class AssignmentRequestTests(AssignmentRequestTestCase):
         ar = AssignmentRequest.objects.create(**data)
         self.assertGet(reverse('juntagrico-assignment-request:delete', args=(ar.pk,)), 302)
         ar.refresh_from_db()
-        self.assertNotEquals(ar, None)
+        self.assertNotEqual(ar, None)
 
     def test_assignment_request_wo_approver(self):
         self.assertPost(reverse('juntagrico-assignment-request:request'), self.assignment_request_data(for_form=True), 302)
