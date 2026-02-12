@@ -22,7 +22,6 @@ INSTALLED_APPS = [
     'import_export',
     'adminsortable2',
     'polymorphic',
-    'fontawesomefree',
     'django_select2',
     'djrichtextfield',
 ]
