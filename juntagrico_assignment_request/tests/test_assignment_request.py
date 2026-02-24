@@ -102,6 +102,16 @@ class AssignmentRequestTests(AssignmentRequestTestCase):
         ar.refresh_from_db()
         self.assertEqual(ar.status, AssignmentRequest.CONFIRMED)
 
+    def test_assignment_confirmation_without_area(self):
+        ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.area_admin, activityarea=None))
+        # approver for other area can not confirm can not approve
+        self.assertGet(reverse('juntagrico-assignment-request:confirm', args=(ar.pk,)), 302, member=self.member2)
+        ar.refresh_from_db()
+        self.assertEqual(ar.status, AssignmentRequest.REQUESTED)
+        self.assertGet(reverse('juntagrico-assignment-request:confirm', args=(ar.pk,)), 302, member=self.approver)
+        ar.refresh_from_db()
+        self.assertEqual(ar.status, AssignmentRequest.CONFIRMED)
+
     def test_edit_approved_assignment_of_request(self):
         ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.approver, approved=True))
         # make sure that amount is restored correctly

@@ -122,10 +122,7 @@ class AssignmentRequest(models.Model):
         if not self.activityarea:
             self.activityarea, created = ActivityArea.objects.get_or_create(
                 name=_('Selbständige Einsätze'),
-                defaults={
-                    'coordinator': self.approver,
-                    'hidden': True
-                }
+                defaults={'hidden': True}
             )
 
     def get_matching_job_type(self):
