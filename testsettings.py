@@ -14,7 +14,7 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.admin',
+    'juntagrico.apps.JuntagricoAdminConfig',
     'juntagrico_assignment_request',
     'juntagrico',
     'crispy_forms',
@@ -120,6 +120,7 @@ CRISPY_FAIL_SILENTLY = not DEBUG
 # Example usage of ASSIGNMENT_REQUEST_AREAS
 def only_visible(queryset):
     return queryset.filter(hidden=False)
+
 
 ENABLE_SHARES = True
 
