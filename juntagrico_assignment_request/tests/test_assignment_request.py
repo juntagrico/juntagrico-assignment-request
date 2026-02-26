@@ -48,7 +48,7 @@ class AssignmentRequestTests(AssignmentRequestTestCase):
         ar = AssignmentRequest.objects.create(**data)
         self.assertGet(reverse('juntagrico-assignment-request:delete', args=(ar.pk,)), 302)
         ar.refresh_from_db()
-        self.assertNotEquals(ar, None)
+        self.assertNotEqual(ar, None)
 
     def test_assignment_request_wo_approver(self):
         self.assertPost(reverse('juntagrico-assignment-request:request'), self.assignment_request_data(for_form=True), 302)
@@ -99,6 +99,16 @@ class AssignmentRequestTests(AssignmentRequestTestCase):
         ar.refresh_from_db()
         self.assertEqual(ar.status, AssignmentRequest.REQUESTED)
         self.assertGet(reverse('juntagrico-assignment-request:confirm', args=(ar.pk,)), 302, member=self.area_admin)
+        ar.refresh_from_db()
+        self.assertEqual(ar.status, AssignmentRequest.CONFIRMED)
+
+    def test_assignment_confirmation_without_area(self):
+        ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.area_admin, activityarea=None))
+        # approver for other area can not confirm can not approve
+        self.assertGet(reverse('juntagrico-assignment-request:confirm', args=(ar.pk,)), 302, member=self.member2)
+        ar.refresh_from_db()
+        self.assertEqual(ar.status, AssignmentRequest.REQUESTED)
+        self.assertGet(reverse('juntagrico-assignment-request:confirm', args=(ar.pk,)), 302, member=self.approver)
         ar.refresh_from_db()
         self.assertEqual(ar.status, AssignmentRequest.CONFIRMED)
 

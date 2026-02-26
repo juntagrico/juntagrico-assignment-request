@@ -14,14 +14,16 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.admin',
+    'juntagrico.apps.JuntagricoAdminConfig',
     'juntagrico_assignment_request',
     'juntagrico',
     'crispy_forms',
+    'crispy_bootstrap4',
     'import_export',
     'adminsortable2',
     'polymorphic',
-    'fontawesomefree',
+    'django_select2',
+    'djrichtextfield',
 ]
 
 DATABASES = {
@@ -47,12 +49,7 @@ MIDDLEWARE = (
     'django.contrib.messages.middleware.MessageMiddleware',
 )
 
-EMAIL_HOST = os.environ.get('JUNTAGRICO_EMAIL_HOST')
-EMAIL_HOST_USER = os.environ.get('JUNTAGRICO_EMAIL_USER')
-EMAIL_HOST_PASSWORD = os.environ.get('JUNTAGRICO_EMAIL_PASSWORD')
-EMAIL_PORT = os.environ.get('JUNTAGRICO_EMAIL_PORT', 2525)
-EMAIL_USE_TLS = os.environ.get('JUNTAGRICO_EMAIL_TLS', False)
-
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 WHITELIST_EMAILS = []
 
@@ -116,8 +113,6 @@ TEMPLATES = [
 
 LOGIN_REDIRECT_URL = "/"
 
-SESSION_SERIALIZER = 'django.contrib.sessions.serializers.PickleSerializer'
-
 CRISPY_TEMPLATE_PACK = 'bootstrap4'
 CRISPY_FAIL_SILENTLY = not DEBUG
 
@@ -125,6 +120,7 @@ CRISPY_FAIL_SILENTLY = not DEBUG
 # Example usage of ASSIGNMENT_REQUEST_AREAS
 def only_visible(queryset):
     return queryset.filter(hidden=False)
+
 
 ENABLE_SHARES = True
 

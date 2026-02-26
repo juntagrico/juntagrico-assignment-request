@@ -4,18 +4,24 @@ on:
   push:
     branches: [ main ]
   pull_request:
-    branches: [ main, release_* ]
+    branches: [ main, 'releases/**' ]
 
 jobs:
-  build:
+  tests:
+    name: Tests
     runs-on: ubuntu-latest
     env:
       DJANGO_SETTINGS_MODULE: testsettings
       PYTHONPATH: .
-      CC_TEST_REPORTER_ID: ${{ secrets.CODECOV_TOKEN }}
+      COVERAGE_FILE: coverage
     strategy:
       matrix:
-        python-version: ['3.9', '3.10', '3.11']
+        include:
+          - python-version: '3.10'
+          - python-version: '3.11'
+          - python-version: '3.12'
+          - python-version: '3.13'
+          - python-version: '3.14'
 
     steps:
     - uses: actions/checkout@v4
@@ -28,21 +34,33 @@ jobs:
         pip install --upgrade -r requirements.txt
     - name: ruff
       run: |
-        ruff check juntagrico_assignment_request
-    - name: install CodeClimate reporter
-      if: ${{ env.CC_TEST_REPORTER_ID != null && github.event_name == 'push'}}
-      run: |
-        curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
-        chmod +x ./cc-test-reporter
-        ./cc-test-reporter before-build
+        ruff check --preview juntagrico_assignment_request
     - name: run tests
       run: |
         python -m django makemigrations --noinput
         coverage run -m manage test
-    - name: publish code coverage
-      if: ${{ env.CC_TEST_REPORTER_ID != null && github.event_name == 'push'}}
-      run: |
-        coverage report
-        coverage xml
-        ./cc-test-reporter format-coverage -t coverage.py -o coverageupload
-        ./cc-test-reporter upload-coverage -i coverageupload
+    - run: coverage lcov -o coverage.lcov
+      if: ${{ matrix.python-version  == '3.11' }}
+    - uses: actions/upload-artifact@v4
+      if: ${{ matrix.python-version  == '3.11' }}
+      with:
+        name: coverage
+        path: coverage.lcov
+
+  coverage:
+    name: Coverage Report
+    needs: tests
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: coverage
+          merge-multiple: true
+      - uses: qltysh/qlty-action/coverage@v2
+        with:
+          oidc: true
+          files: coverage/coverage*.lcov

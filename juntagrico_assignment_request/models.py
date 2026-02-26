@@ -65,7 +65,7 @@ class AssignmentRequest(models.Model):
                                              "dich aufgefordert, die Anfrage zu senden?"))
 
     description = models.TextField(_('Beschreibung'), max_length=1000, default='',
-                                   help_text=_("Kurze Beschreibung was du gemacht hat"))
+                                   help_text=_("Kurze Beschreibung, was du gemacht hast"))
     activityarea = models.ForeignKey(ActivityArea, verbose_name=_('Tätigkeitsbereich'),
                                      blank=True, null=True, on_delete=models.SET_NULL,
                                      help_text=_("Was am besten passt. Ansonsten leer lassen"))
@@ -122,10 +122,7 @@ class AssignmentRequest(models.Model):
         if not self.activityarea:
             self.activityarea, created = ActivityArea.objects.get_or_create(
                 name=_('Selbständige Einsätze'),
-                defaults={
-                    'coordinator': self.approver,
-                    'hidden': True
-                }
+                defaults={'hidden': True}
             )
 
     def get_matching_job_type(self):
