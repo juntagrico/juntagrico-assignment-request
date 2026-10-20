@@ -14,7 +14,7 @@ Soeben hat {{ assignment_request.member }} {{ assignment_request.amount }} {{ v_
 {% endif %}
 
 Bestätige ohne Kommentar
-{{ serverurl }}{% url 'juntagrico-assignment-request:confirm' assignment_request.id %}
+{{ serverurl }}{% url 'juntagrico-assignment-request:confirm' assignment_request.id %}?key={{ assignment_request.confirm_key }}
 oder schreibe zuerst eine Antwort an {{ assignment_request.member }}:
 {{ serverurl }}{% url 'juntagrico-assignment-request:respond' assignment_request.id %}
 {% endblock %}

@@ -80,6 +80,8 @@ def edit_request_assignment(request, request_id, text_override=None):
     if request.method == 'POST' and assignment_request_form.is_valid():
         # edit request
         new_request = assignment_request_form.instance
+        # invalidate confirmation links of previous emails
+        new_request.renew_confirm_key()
         if new_request.get_amount() > old_amount:
             # if significant changes were made re-approval is needed
             new_request.status = AssignmentRequest.REQUESTED
@@ -164,25 +166,33 @@ def respond_assignment_request(request, request_id, text_override=None):
 @approver_for_request_required
 def confirm_assignment_request(request, request_id, text_override=None):
     """
-    Confirm an assignment request directly
+    Confirm an assignment request directly with the link from the email.
+    Without a valid key, e.g. because the request was changed in the meantime, the response form is shown instead
     """
     text = dict(
         confirmed=_("Anfrage bestätigt."),
-        already_confirmed=_("Anfrage bereits bestätigt.")
+        already_confirmed=_("Anfrage bereits bestätigt."),
+        changed=_("Die Anfrage wurde inzwischen geändert. Bitte prüfe sie, bevor du sie bestätigst.")
     )
     text.update(text_override or {})
 
     assignment_request = get_object_or_404(AssignmentRequest, id=request_id)
-    if not assignment_request.is_confirmed():
-        assignment_request.response_date = date.today()
-        assignment_request.response = ''
-        assignment_request.status = AssignmentRequest.CONFIRMED
-        adminnotification.request_handled_by_other_approver(assignment_request, request.user.member)
-        # overwrite approver in any case to actual approver
-        assignment_request.approver = request.user.member
-        assignment_request.save()
-        membernotification.request_handled(assignment_request)
-        messages.success(request, text['confirmed'])
-    else:
+    if assignment_request.is_confirmed():
         messages.warning(request, text['already_confirmed'])
+        return redirect('juntagrico-assignment-request:list')
+    key = request.GET.get('key')
+    if not assignment_request.check_confirm_key(key):
+        if key:
+            messages.warning(request, text['changed'])
+        return redirect('juntagrico-assignment-request:respond', request_id=request_id)
+
+    assignment_request.response_date = date.today()
+    assignment_request.response = ''
+    assignment_request.status = AssignmentRequest.CONFIRMED
+    adminnotification.request_handled_by_other_approver(assignment_request, request.user.member)
+    # overwrite approver in any case to actual approver
+    assignment_request.approver = request.user.member
+    assignment_request.save()
+    membernotification.request_handled(assignment_request)
+    messages.success(request, text['confirmed'])
     return redirect('juntagrico-assignment-request:list')

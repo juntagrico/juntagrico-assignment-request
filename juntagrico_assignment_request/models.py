@@ -1,4 +1,5 @@
 from datetime import datetime, date, time as datetime_time
+import secrets
 import time
 
 from django.db import models
@@ -13,6 +14,10 @@ from juntagrico.entity.jobs import Assignment, ActivityArea, JobType, RecuringJo
 
 from juntagrico.config import Config
 from juntagrico.util.temporal import start_of_business_year
+
+
+def generate_confirm_key():
+    return secrets.token_urlsafe(32)
 
 
 class AssignmentQueryset(models.QuerySet):
@@ -78,6 +83,10 @@ class AssignmentRequest(models.Model):
     response = models.TextField(_('Antwort'), blank=True, null=True,
                                 help_text=_("Rückmeldung an " + Config.vocabulary('member') + ". Kann leer bleiben."))
 
+    # secret for the one click confirmation link in the emails. Renewed on every change by the member,
+    # such that a link only confirms the state of the request that was sent to the approver
+    confirm_key = models.CharField(max_length=64, null=True, editable=False, default=generate_confirm_key)
+
     objects = AssignmentQueryset.as_manager()
 
     def __str__(self):
@@ -88,6 +97,12 @@ class AssignmentRequest(models.Model):
 
     def is_rejected(self):
         return self.status == self.REJECTED
+
+    def renew_confirm_key(self):
+        self.confirm_key = generate_confirm_key()
+
+    def check_confirm_key(self, key):
+        return bool(self.confirm_key and key) and secrets.compare_digest(self.confirm_key.encode(), key.encode())
 
     def get_amount(self):
         """
