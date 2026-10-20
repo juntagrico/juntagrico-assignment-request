@@ -31,7 +31,7 @@ class SelfApprovalTests(AssignmentRequestTestCase):
 
     def test_other_approver_can_confirm(self):
         ar = self.own_request(self.approver)
-        self.assertGet(reverse('juntagrico-assignment-request:confirm', args=(ar.pk,)), 302, member=self.approver2)
+        self.assertPost(reverse('juntagrico-assignment-request:confirm', args=(ar.pk,)), code=302, member=self.approver2)
         ar.refresh_from_db()
         self.assertEqual(ar.status, AssignmentRequest.CONFIRMED)
 
