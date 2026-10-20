@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load juntagrico.config %}
+{% block page_title %}
+    {% vocabulary "assignment" as v_assignment %}
+    <div class="page-title col-md-12">
+        <h3>
+            {% blocktrans %}{{ v_assignment }}-Anfrage löschen{% endblocktrans %}
+        </h3>
+    </div>
+{% endblock %}
+{% block content %}
+    <div class="col-md-12 mb-4">
+        {% trans "Beschreibung:" %} {{ assignment_request.description }}<br>
+        {% trans "Am:" %} {{ assignment_request.job_time|date:"d.m.Y H:i" }}<br>
+        {% trans "Status:" %} {{ assignment_request.get_status_display }}
+    </div>
+    <div class="col-md-12 mb-4">
+        <form action="" method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">{% trans "Löschen" %}</button>
+            <a href="{% url 'juntagrico-assignment-request:request' %}" class="btn">{% trans "Abbrechen" %}</a>
+        </form>
+    </div>
+{% endblock %}
