@@ -28,7 +28,7 @@ def request_assignment(request, text_override=None):
     text.update(text_override or {})
 
     member = request.user.member
-    assignment_request_form = AssignmentRequestForm(request.POST or None)
+    assignment_request_form = AssignmentRequestForm(request.POST or None, member=member)
     if request.method == 'POST' and assignment_request_form.is_valid():
         # Create request
         assignment_request = assignment_request_form.instance
@@ -76,7 +76,7 @@ def edit_request_assignment(request, request_id, text_override=None):
     assignment_request = get_object_or_404(AssignmentRequest, id=request_id, member=member)
     old_amount = assignment_request.get_amount()
     old_approver = assignment_request.approver
-    assignment_request_form = AssignmentRequestForm(request.POST or None, instance=assignment_request)
+    assignment_request_form = AssignmentRequestForm(request.POST or None, instance=assignment_request, member=member)
     if request.method == 'POST' and assignment_request_form.is_valid():
         # edit request
         new_request = assignment_request_form.instance
@@ -139,7 +139,11 @@ def respond_assignment_request(request, request_id, text_override=None):
         messages.warning(request, text['already_replied'])
         return redirect('juntagrico-assignment-request:list')
 
-    assignment_response_form = AssignmentResponseForm(request.POST or None, instance=assignment_request)
+    areas = None
+    if not request.user.has_perm('juntagrico_assignment_request.can_confirm_assignments'):
+        # approvers of area can only assign their areas
+        areas = request.user.member.coordinated_areas.all()
+    assignment_response_form = AssignmentResponseForm(request.POST or None, instance=assignment_request, areas=areas)
     if request.method == 'POST' and assignment_response_form.is_valid():
         assignment_request = assignment_response_form.instance
         assignment_request.response_date = date.today()
