@@ -59,6 +59,7 @@ class AssignmentRequestForm(ModelForm):
 
     def __init__(self, *args, member=None, **kwargs):
         super().__init__(*args, **kwargs)
+        self.member = member
         approvers = get_approvers()
         if member is not None:
             # members can not approve their own requests
@@ -100,9 +101,21 @@ class AssignmentRequestForm(ModelForm):
             return None
         return min(start_of_business_year(), timezone.localdate() - timedelta(days=grace_period))
 
+    def check_max_pending(self):
+        # limit number of pending requests, as each new request sends emails to the approvers
+        max_pending = getattr(settings, 'ASSIGNMENT_REQUEST_MAX_PENDING', 10)
+        if max_pending is None or self.member is None or self.instance.pk:
+            return
+        pending = AssignmentRequest.objects.filter(member=self.member, status=AssignmentRequest.REQUESTED)
+        if pending.count() >= max_pending:
+            raise ValidationError(_('Du hast bereits %(count)s offene Anfragen. '
+                                    'Bitte warte, bis diese beantwortet sind.'),
+                                  params={'count': max_pending})
+
     def clean(self):
-        # check that approver is valid for the selected area
         cleaned_data = super().clean()
+        self.check_max_pending()
+        # check that approver is valid for the selected area
         # fields are missing in cleaned_data, if their own validation failed already
         approver = cleaned_data.get('approver')
         if approver and 'activityarea' in cleaned_data:
