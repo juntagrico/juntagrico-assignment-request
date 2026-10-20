@@ -65,7 +65,7 @@ Change the instructions at the top of the request form
 
 1. Members will see a new entry in the menu to request assignments
 2. They are presented with a form to fill out the details of the job they did
-3. Below the form, they see a list of assignments that they already sent with the option to edit or delete them
+3. Below the form, they see a list of assignments that they already sent with the option to edit or delete them, as long as they are not confirmed
 4. Upon sending the form, the selected confirmer (or the fallback users) will be informed by email
 5. The confirmer can modify the assignment amount, accept, deny or just send a message to the member
     - For convenience, there is a one click option to confirm the assignment in the email
