@@ -1,3 +1,4 @@
+from django.contrib import admin
 from django.core.exceptions import ValidationError
 from django.forms import ModelForm
 from django.utils.translation import gettext_lazy as _
@@ -40,11 +41,27 @@ class AssignmentRequestAdmin(BaseAdmin):
                     'location', 'request_date', 'approver', 'status', ]
     readonly_fields = ['assignment']
 
+    @staticmethod
+    def can_respond(request):
+        # only general approvers can respond to requests
+        return request.user.has_perm('juntagrico_assignment_request.can_confirm_assignments')
+
+    @admin.display(description=_('Status'))
+    def status_readonly(self, obj):
+        # show status without the help text on how to change it
+        return (obj or AssignmentRequest()).get_status_display()
+
+    def get_fields(self, request, obj=None):
+        fields = list(super().get_fields(request, obj))
+        if not self.can_respond(request):
+            fields.remove('status_readonly')
+            fields[fields.index('status')] = 'status_readonly'
+        return fields
+
     def get_readonly_fields(self, request, obj=None):
         readonly_fields = list(super().get_readonly_fields(request, obj))
-        if not request.user.has_perm('juntagrico_assignment_request.can_confirm_assignments'):
-            # only general approvers can respond to requests
-            readonly_fields.append('status')
+        if not self.can_respond(request):
+            readonly_fields.append('status_readonly')
         return readonly_fields
 
     def get_form(self, request, obj=None, **kwargs):

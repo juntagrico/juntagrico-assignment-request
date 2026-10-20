@@ -80,6 +80,8 @@ class AdminTests(AssignmentRequestTestCase):
         ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.approver))
         response = self.assertGet(self.change_url(ar), member=self.staff)
         self.assertNotIn('status', response.context['adminform'].form.fields)
+        self.assertContains(response, 'Beantragt')
+        self.assertNotContains(response, 'um die Anfrage anzunehmen')
         self.assertPost(self.change_url(ar), self.admin_data(ar, status=AssignmentRequest.CONFIRMED,
                                                              description='changed'), 302, member=self.staff)
         ar.refresh_from_db()
