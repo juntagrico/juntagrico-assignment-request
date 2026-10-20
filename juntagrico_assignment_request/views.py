@@ -68,12 +68,17 @@ def edit_request_assignment(request, request_id, text_override=None):
 
     text = dict(
         changed=_("Deine Änderungen wurden gespeichert."),
-        rerequested=_("Deine Änderungen wurden gespeichert und zur (erneuten) Bestätigung verschickt.")
+        rerequested=_("Deine Änderungen wurden gespeichert und zur (erneuten) Bestätigung verschickt."),
+        confirmed=_("Bestätigte Anfragen können nicht mehr geändert werden.")
     )
     text.update(text_override or {})
 
     member = request.user.member
     assignment_request = get_object_or_404(AssignmentRequest, id=request_id, member=member)
+    if assignment_request.is_confirmed():
+        # the confirmed assignment must not be changed without approval
+        messages.warning(request, text['confirmed'])
+        return redirect('juntagrico-assignment-request:request')
     old_amount = assignment_request.get_amount()
     old_approver = assignment_request.approver
     assignment_request_form = AssignmentRequestForm(request.POST or None, instance=assignment_request)

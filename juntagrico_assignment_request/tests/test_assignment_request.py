@@ -17,17 +17,18 @@ class AssignmentRequestTests(AssignmentRequestTestCase):
         self.assertEqual(mail.outbox[0].to[0], self.approver.email)
 
     def test_assignment_request_edit(self):
-        ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.approver, approved=True))
+        ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.approver, status=AssignmentRequest.REJECTED))
         self.assertGet(reverse('juntagrico-assignment-request:request'))  # test list of existing own requests
         self.assertGet(reverse('juntagrico-assignment-request:edit', args=(ar.pk,)))
         self.assertPost(reverse('juntagrico-assignment-request:edit', args=(ar.pk,)),
-                        self.assignment_request_data(self.approver, for_form=True), 302)
+                        self.assignment_request_data(self.approver, for_form=True, description='changed'), 302)
         ar.refresh_from_db()
-        self.assertEqual(ar.status, AssignmentRequest.CONFIRMED)
+        self.assertEqual(ar.status, AssignmentRequest.REJECTED)
+        self.assertEqual(ar.description, 'changed')
         self.assertEqual(len(mail.outbox), 0)  # no notification to approver, because no re-approval needed.
 
     def test_assignment_request_edit_with_reapproval(self):
-        ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.approver, approved=True))
+        ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.approver, status=AssignmentRequest.REJECTED))
         self.assertGet(reverse('juntagrico-assignment-request:edit', args=(ar.pk,)))
         self.assertPost(reverse('juntagrico-assignment-request:edit', args=(ar.pk,)),
                         self.assignment_request_data(self.approver, for_form=True, amount=2), 302)
