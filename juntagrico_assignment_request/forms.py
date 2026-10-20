@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.db.models import Q
 from django.core.exceptions import ValidationError
 from django.forms import ModelForm, DateTimeInput
 from django.utils.translation import gettext_lazy as _
@@ -86,8 +87,16 @@ class AssignmentResponseForm(ModelForm):
             "activityarea": _("Tätigkeitsbereich"),
         }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, areas=None, **kwargs):
+        """
+        :param areas: if set, the activity area can only be changed to one of these areas
+        """
         super().__init__(*args, **kwargs)
+        if areas is not None:
+            # keep the current area selectable, e.g. if the coordinator changed in the meantime
+            self.fields['activityarea'].queryset = self.fields['activityarea'].queryset.filter(
+                Q(pk__in=areas) | Q(pk=self.instance.activityarea_id))
+            self.fields['activityarea'].required = True
         self.fields['duration'].widget.attrs['step'] = 'any'
         self.helper = FormHelper()
         self.helper.form_class = 'form-horizontal'
