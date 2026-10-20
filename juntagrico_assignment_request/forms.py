@@ -101,6 +101,19 @@ class AssignmentRequestForm(ModelForm):
             return None
         return min(start_of_business_year(), timezone.localdate() - timedelta(days=grace_period))
 
+    def clean(self):
+        # check that approver is valid for the selected area
+        cleaned_data = super().clean()
+        # fields are missing in cleaned_data, if their own validation failed already
+        approver = cleaned_data.get('approver')
+        if approver and 'activityarea' in cleaned_data:
+            valid_approvers = (get_approvers(general_only=True) |
+                               get_approvers().filter(coordinated_areas=cleaned_data['activityarea']))
+            if approver not in valid_approvers:
+                raise ValidationError(_('Ungültige Auswahl bei "Abgesprochen mit"'))
+        self.check_max_pending()
+        return cleaned_data
+
     def check_max_pending(self):
         # limit number of pending requests, as each new request sends emails to the approvers
         max_pending = getattr(settings, 'ASSIGNMENT_REQUEST_MAX_PENDING', 10)
@@ -111,19 +124,6 @@ class AssignmentRequestForm(ModelForm):
             raise ValidationError(_('Du hast bereits %(count)s offene Anfragen. '
                                     'Bitte warte, bis diese beantwortet sind.'),
                                   params={'count': max_pending})
-
-    def clean(self):
-        cleaned_data = super().clean()
-        self.check_max_pending()
-        # check that approver is valid for the selected area
-        # fields are missing in cleaned_data, if their own validation failed already
-        approver = cleaned_data.get('approver')
-        if approver and 'activityarea' in cleaned_data:
-            valid_approvers = (get_approvers(general_only=True) |
-                               get_approvers().filter(coordinated_areas=cleaned_data['activityarea']))
-            if approver not in valid_approvers:
-                raise ValidationError(_('Ungültige Auswahl bei "Abgesprochen mit"'))
-        return cleaned_data
 
 
 class AssignmentResponseForm(ModelForm):
