@@ -14,7 +14,8 @@ def get_approver_emails(assignment_request):
         receivers.append(assignment_request.approver.email)
     else:
         # Otherwise inform all that should be notified on unapproved assignments
-        for notified in all_notified_on_unapproved_assignments():
+        # except the requesting member, who can not approve their own request
+        for notified in all_notified_on_unapproved_assignments().exclude(pk=assignment_request.member_id):
             receivers.append(notified.email)
     if not receivers:
         # Nobody? Send it to the info mail then

@@ -28,7 +28,7 @@ def request_assignment(request, text_override=None):
     text.update(text_override or {})
 
     member = request.user.member
-    assignment_request_form = AssignmentRequestForm(request.POST or None)
+    assignment_request_form = AssignmentRequestForm(request.POST or None, member=member)
     if request.method == 'POST' and assignment_request_form.is_valid():
         # Create request
         assignment_request = assignment_request_form.instance
@@ -76,7 +76,7 @@ def edit_request_assignment(request, request_id, text_override=None):
     assignment_request = get_object_or_404(AssignmentRequest, id=request_id, member=member)
     old_amount = assignment_request.get_amount()
     old_approver = assignment_request.approver
-    assignment_request_form = AssignmentRequestForm(request.POST or None, instance=assignment_request)
+    assignment_request_form = AssignmentRequestForm(request.POST or None, instance=assignment_request, member=member)
     if request.method == 'POST' and assignment_request_form.is_valid():
         # edit request
         new_request = assignment_request_form.instance
