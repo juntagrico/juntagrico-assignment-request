@@ -53,6 +53,23 @@ def only_visible(queryset):
 ASSIGNMENT_REQUEST_AREAS = only_visible
 ```
 
+### ASSIGNMENT_REQUEST_GRACE_PERIOD
+
+Limits how far in the past members can request assignments. Requests in the future are never allowed.
+
+- `None` (default): Assignments can be requested for any date in the past.
+- A number of days: Assignments can be requested for dates in the current business year
+  and for dates up to this number of days before today, even if they are in the last business year.
+  With `0` only dates in the current business year are allowed.
+
+Existing requests can keep their date, even if it is not allowed anymore.
+
+Example: Allow requests for the last business year during the first two weeks of the new business year:
+
+```python
+ASSIGNMENT_REQUEST_GRACE_PERIOD = 14
+```
+
 ### Template Blocks
 
 See [docs](https://juntagrico.readthedocs.io/en/latest/reference/templates.html#set-up-template-overrides) on how to set up template overrides

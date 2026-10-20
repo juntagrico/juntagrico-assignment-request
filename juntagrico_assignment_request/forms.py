@@ -1,7 +1,10 @@
+from datetime import timedelta
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.forms import ModelForm, DateTimeInput
 from django.utils import timezone
+from django.utils.formats import date_format
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import gettext
 from django.urls import reverse
@@ -79,9 +82,18 @@ class AssignmentRequestForm(ModelForm):
             return job_time
         if job_time > timezone.now():
             raise ValidationError(_('Das Datum darf nicht in der Zukunft liegen.'))
-        if timezone.localtime(job_time).date() < start_of_business_year():
-            raise ValidationError(_('Das Datum darf nicht vor dem Beginn des aktuellen Geschäftsjahres liegen.'))
+        earliest = self.earliest_job_date()
+        if earliest and timezone.localtime(job_time).date() < earliest:
+            raise ValidationError(_('Das Datum darf nicht vor dem {} liegen.').format(date_format(earliest)))
         return job_time
+
+    @staticmethod
+    def earliest_job_date():
+        # None: no limit. Otherwise, the current business year and the given number of days before today are allowed
+        grace_period = getattr(settings, 'ASSIGNMENT_REQUEST_GRACE_PERIOD', None)
+        if grace_period is None:
+            return None
+        return min(start_of_business_year(), timezone.localdate() - timedelta(days=grace_period))
 
     def clean(self):
         # check that approver is valid for the selected area
