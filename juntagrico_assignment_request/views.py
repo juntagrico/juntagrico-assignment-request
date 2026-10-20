@@ -139,7 +139,11 @@ def respond_assignment_request(request, request_id, text_override=None):
         messages.warning(request, text['already_replied'])
         return redirect('juntagrico-assignment-request:list')
 
-    assignment_response_form = AssignmentResponseForm(request.POST or None, instance=assignment_request)
+    areas = None
+    if not request.user.has_perm('juntagrico_assignment_request.can_confirm_assignments'):
+        # approvers of area can only assign their areas
+        areas = request.user.member.coordinated_areas.all()
+    assignment_response_form = AssignmentResponseForm(request.POST or None, instance=assignment_request, areas=areas)
     if request.method == 'POST' and assignment_response_form.is_valid():
         assignment_request = assignment_response_form.instance
         assignment_request.response_date = date.today()
