@@ -42,6 +42,7 @@ def request_assignment(request, text_override=None):
     renderdict = {
         'assignment_requests': AssignmentRequest.objects.filter(member=member).pending(),
         'form': assignment_request_form,
+        'limit_error': assignment_request_form.new_request_limit_error(),
     }
     return render(request, "assignment_request/request.html", renderdict)
 
@@ -83,17 +84,19 @@ def edit_request_assignment(request, request_id, text_override=None):
         # the confirmed assignment must not be changed without approval
         messages.warning(request, text['confirmed'])
         return redirect('juntagrico-assignment-request:request')
-    old_amount = assignment_request.get_amount()
     old_approver = assignment_request.approver
     assignment_request_form = AssignmentRequestForm(request.POST or None, instance=assignment_request, member=member)
     if request.method == 'POST' and assignment_request_form.is_valid():
         # edit request
         new_request = assignment_request_form.instance
-        if new_request.get_amount() > old_amount:
+        if assignment_request_form.amount_increased():
             # if significant changes were made re-approval is needed
+            notify = assignment_request_form.sends_notification()
             new_request.status = AssignmentRequest.REQUESTED
+            new_request.request_date = date.today()
             new_request.save()
-            adminnotification.request_changed(new_request)
+            if notify:
+                adminnotification.request_changed(new_request)
             messages.success(request, text['rerequested'])
         else:
             if new_request.status is not AssignmentRequest.REQUESTED:
