@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 from django.conf import settings
+from django.db.models import Q
 from django.core.exceptions import ValidationError
 from django.forms import ModelForm, DateTimeInput
 from django.utils import timezone
@@ -56,9 +57,13 @@ class AssignmentRequestForm(ModelForm):
         }
         return approvers
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, member=None, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['approver'].queryset = get_approvers()
+        approvers = get_approvers()
+        if member is not None:
+            # members can not approve their own requests
+            approvers = approvers.exclude(pk=member.pk)
+        self.fields['approver'].queryset = approvers
         self.fields['activityarea'].queryset = self.activityarea_queryset()
         self.fields['duration'].widget.attrs['step'] = 'any'
         self.fields['job_time'].widget = DateTimeWidget()
@@ -98,10 +103,14 @@ class AssignmentRequestForm(ModelForm):
     def clean(self):
         # check that approver is valid for the selected area
         cleaned_data = super().clean()
-        valid_approvers = (get_approvers(general_only=True) |
-                           get_approvers().filter(coordinated_areas=cleaned_data['activityarea']))
-        if cleaned_data['approver'] and cleaned_data['approver'] not in valid_approvers:
-            raise ValidationError(_('Ungültige Auswahl bei "Abgesprochen mit"'))
+        # fields are missing in cleaned_data, if their own validation failed already
+        approver = cleaned_data.get('approver')
+        if approver and 'activityarea' in cleaned_data:
+            valid_approvers = (get_approvers(general_only=True) |
+                               get_approvers().filter(coordinated_areas=cleaned_data['activityarea']))
+            if approver not in valid_approvers:
+                raise ValidationError(_('Ungültige Auswahl bei "Abgesprochen mit"'))
+        return cleaned_data
 
 
 class AssignmentResponseForm(ModelForm):
@@ -113,8 +122,16 @@ class AssignmentResponseForm(ModelForm):
             "activityarea": _("Tätigkeitsbereich"),
         }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, areas=None, **kwargs):
+        """
+        :param areas: if set, the activity area can only be changed to one of these areas
+        """
         super().__init__(*args, **kwargs)
+        if areas is not None:
+            # keep the current area selectable, e.g. if the coordinator changed in the meantime
+            self.fields['activityarea'].queryset = self.fields['activityarea'].queryset.filter(
+                Q(pk__in=areas) | Q(pk=self.instance.activityarea_id))
+            self.fields['activityarea'].required = True
         self.fields['duration'].widget.attrs['step'] = 'any'
         self.helper = FormHelper()
         self.helper.form_class = 'form-horizontal'
