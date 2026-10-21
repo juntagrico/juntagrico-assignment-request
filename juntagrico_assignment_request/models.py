@@ -27,10 +27,11 @@ class AssignmentQueryset(models.QuerySet):
         return self.filter(Q(status=AssignmentRequest.REQUESTED) | Q(job_time__gte=start))
 
     def for_approver(self, member):
-        # assignment requests that are requested to this member
+        # assignment requests that are requested to this member, except their own
+        qs = self.exclude(member=member)
         if member.user.has_perm('juntagrico_assignment_request.notified_on_unapproved_assignments'):
-            return self.filter(Q(approver=member) | Q(approver__isnull=True))
-        return self.filter(approver=member)
+            return qs.filter(Q(approver=member) | Q(approver__isnull=True))
+        return qs.filter(approver=member)
 
 
 class AssignmentRequest(models.Model):

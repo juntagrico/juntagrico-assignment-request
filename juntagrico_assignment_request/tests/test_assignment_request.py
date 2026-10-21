@@ -22,17 +22,18 @@ class AssignmentRequestTests(AssignmentRequestTestCase):
         self.assertEqual(mail.outbox[0].to[0], self.approver.email)
 
     def test_assignment_request_edit(self):
-        ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.approver, approved=True))
+        ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.approver, status=AssignmentRequest.REJECTED))
         self.assertGet(reverse('juntagrico-assignment-request:request'))  # test list of existing own requests
         self.assertGet(reverse('juntagrico-assignment-request:edit', args=(ar.pk,)))
         self.assertPost(reverse('juntagrico-assignment-request:edit', args=(ar.pk,)),
-                        self.assignment_request_data(self.approver, for_form=True), 302)
+                        self.assignment_request_data(self.approver, for_form=True, description='changed'), 302)
         ar.refresh_from_db()
-        self.assertEqual(ar.status, AssignmentRequest.CONFIRMED)
+        self.assertEqual(ar.status, AssignmentRequest.REJECTED)
+        self.assertEqual(ar.description, 'changed')
         self.assertEqual(len(mail.outbox), 0)  # no notification to approver, because no re-approval needed.
 
     def test_assignment_request_edit_with_reapproval(self):
-        ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.approver, approved=True))
+        ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.approver, status=AssignmentRequest.REJECTED))
         self.assertGet(reverse('juntagrico-assignment-request:edit', args=(ar.pk,)))
         self.assertPost(reverse('juntagrico-assignment-request:edit', args=(ar.pk,)),
                         self.assignment_request_data(self.approver, for_form=True, amount=2), 302)
@@ -43,17 +44,30 @@ class AssignmentRequestTests(AssignmentRequestTestCase):
 
     def test_assignment_request_delete(self):
         ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.approver))
-        self.assertGet(reverse('juntagrico-assignment-request:delete', args=(ar.pk,)), 302)
+        self.assertPost(reverse('juntagrico-assignment-request:delete', args=(ar.pk,)), code=302)
         with self.assertRaises(AssignmentRequest.DoesNotExist):
             ar.refresh_from_db()
+
+    def test_assignment_request_delete_link_shows_confirmation(self):
+        # GET, e.g. the link in the rejection email, must not delete the request
+        ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.approver))
+        self.assertGet(reverse('juntagrico-assignment-request:delete', args=(ar.pk,)))
+        ar.refresh_from_db()
 
     def test_assignment_request_not_deletable(self):
         # can not delete accepted assignment request
         data = self.assignment_request_data(self.approver, approved=True)
         ar = AssignmentRequest.objects.create(**data)
         self.assertGet(reverse('juntagrico-assignment-request:delete', args=(ar.pk,)), 302)
+        self.assertPost(reverse('juntagrico-assignment-request:delete', args=(ar.pk,)), code=302)
         ar.refresh_from_db()
         self.assertNotEqual(ar, None)
+
+    def test_assignment_request_of_other_member_not_deletable(self):
+        ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.approver))
+        self.assertGet(reverse('juntagrico-assignment-request:delete', args=(ar.pk,)), 302, member=self.member2)
+        self.assertPost(reverse('juntagrico-assignment-request:delete', args=(ar.pk,)), code=302, member=self.member2)
+        ar.refresh_from_db()
 
     def test_assignment_request_wo_approver(self):
         self.assertPost(reverse('juntagrico-assignment-request:request'), self.assignment_request_data(for_form=True), 302)

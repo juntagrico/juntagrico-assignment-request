@@ -1,6 +1,11 @@
+from datetime import timedelta
+
 from django.conf import settings
+from django.db.models import Q
 from django.core.exceptions import ValidationError
 from django.forms import ModelForm, DateTimeInput
+from django.utils import timezone
+from django.utils.formats import date_format
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import gettext
 from django.urls import reverse
@@ -8,6 +13,8 @@ from django.urls import reverse
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit, HTML
 from crispy_forms.bootstrap import FormActions
+
+from juntagrico.util.temporal import start_of_business_year
 
 from juntagrico_assignment_request.models import AssignmentRequest
 from juntagrico_assignment_request.utils import get_approvers
@@ -50,9 +57,13 @@ class AssignmentRequestForm(ModelForm):
         }
         return approvers
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, member=None, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['approver'].queryset = get_approvers()
+        approvers = get_approvers()
+        if member is not None:
+            # members can not approve their own requests
+            approvers = approvers.exclude(pk=member.pk)
+        self.fields['approver'].queryset = approvers
         self.fields['activityarea'].queryset = self.activityarea_queryset()
         self.fields['duration'].widget.attrs['step'] = 'any'
         self.fields['job_time'].widget = DateTimeWidget()
@@ -68,13 +79,38 @@ class AssignmentRequestForm(ModelForm):
             )
         )
 
+    def clean_job_time(self):
+        job_time = self.cleaned_data['job_time']
+        old_job_time = self.instance.job_time if self.instance.pk else None
+        if old_job_time and job_time.replace(second=0, microsecond=0) == old_job_time.replace(second=0, microsecond=0):
+            # keep date of existing requests, even if it would not be valid anymore
+            return job_time
+        if job_time > timezone.now():
+            raise ValidationError(_('Das Datum darf nicht in der Zukunft liegen.'))
+        earliest = self.earliest_job_date()
+        if earliest and timezone.localtime(job_time).date() < earliest:
+            raise ValidationError(_('Das Datum darf nicht vor dem {} liegen.').format(date_format(earliest)))
+        return job_time
+
+    @staticmethod
+    def earliest_job_date():
+        # None: no limit. Otherwise, the current business year and the given number of days before today are allowed
+        grace_period = getattr(settings, 'ASSIGNMENT_REQUEST_GRACE_PERIOD', None)
+        if grace_period is None:
+            return None
+        return min(start_of_business_year(), timezone.localdate() - timedelta(days=grace_period))
+
     def clean(self):
         # check that approver is valid for the selected area
         cleaned_data = super().clean()
-        valid_approvers = (get_approvers(general_only=True) |
-                           get_approvers().filter(coordinated_areas=cleaned_data['activityarea']))
-        if cleaned_data['approver'] and cleaned_data['approver'] not in valid_approvers:
-            raise ValidationError(_('Ungültige Auswahl bei "Abgesprochen mit"'))
+        # fields are missing in cleaned_data, if their own validation failed already
+        approver = cleaned_data.get('approver')
+        if approver and 'activityarea' in cleaned_data:
+            valid_approvers = (get_approvers(general_only=True) |
+                               get_approvers().filter(coordinated_areas=cleaned_data['activityarea']))
+            if approver not in valid_approvers:
+                raise ValidationError(_('Ungültige Auswahl bei "Abgesprochen mit"'))
+        return cleaned_data
 
 
 class AssignmentResponseForm(ModelForm):
@@ -86,8 +122,16 @@ class AssignmentResponseForm(ModelForm):
             "activityarea": _("Tätigkeitsbereich"),
         }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, areas=None, **kwargs):
+        """
+        :param areas: if set, the activity area can only be changed to one of these areas
+        """
         super().__init__(*args, **kwargs)
+        if areas is not None:
+            # keep the current area selectable, e.g. if the coordinator changed in the meantime
+            self.fields['activityarea'].queryset = self.fields['activityarea'].queryset.filter(
+                Q(pk__in=areas) | Q(pk=self.instance.activityarea_id))
+            self.fields['activityarea'].required = True
         self.fields['duration'].widget.attrs['step'] = 'any'
         self.helper = FormHelper()
         self.helper.form_class = 'form-horizontal'

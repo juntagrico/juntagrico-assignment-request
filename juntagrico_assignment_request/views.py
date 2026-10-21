@@ -28,7 +28,7 @@ def request_assignment(request, text_override=None):
     text.update(text_override or {})
 
     member = request.user.member
-    assignment_request_form = AssignmentRequestForm(request.POST or None)
+    assignment_request_form = AssignmentRequestForm(request.POST or None, member=member)
     if request.method == 'POST' and assignment_request_form.is_valid():
         # Create request
         assignment_request = assignment_request_form.instance
@@ -47,16 +47,20 @@ def request_assignment(request, text_override=None):
 
 
 @login_required
+@highlighted_menu('request_assignment')
 def delete_request_assignment(request, request_id):
     """
-    Delete an assignment request
+    Delete an assignment request.
+    GET requests (e.g. links in emails) show a confirmation page.
     """
 
     assignment_request = get_object_or_404(AssignmentRequest, id=request_id)
-    if assignment_request.member == request.user.member\
-            and not assignment_request.assignment:
+    if assignment_request.member != request.user.member or assignment_request.assignment:
+        return redirect('juntagrico-assignment-request:request')
+    if request.method == 'POST':
         assignment_request.delete()
-    return redirect('juntagrico-assignment-request:request')
+        return redirect('juntagrico-assignment-request:request')
+    return render(request, "assignment_request/delete.html", {'assignment_request': assignment_request})
 
 
 @login_required
@@ -68,15 +72,20 @@ def edit_request_assignment(request, request_id, text_override=None):
 
     text = dict(
         changed=_("Deine Änderungen wurden gespeichert."),
-        rerequested=_("Deine Änderungen wurden gespeichert und zur (erneuten) Bestätigung verschickt.")
+        rerequested=_("Deine Änderungen wurden gespeichert und zur (erneuten) Bestätigung verschickt."),
+        confirmed=_("Bestätigte Anfragen können nicht mehr geändert werden.")
     )
     text.update(text_override or {})
 
     member = request.user.member
     assignment_request = get_object_or_404(AssignmentRequest, id=request_id, member=member)
+    if assignment_request.is_confirmed():
+        # the confirmed assignment must not be changed without approval
+        messages.warning(request, text['confirmed'])
+        return redirect('juntagrico-assignment-request:request')
     old_amount = assignment_request.get_amount()
     old_approver = assignment_request.approver
-    assignment_request_form = AssignmentRequestForm(request.POST or None, instance=assignment_request)
+    assignment_request_form = AssignmentRequestForm(request.POST or None, instance=assignment_request, member=member)
     if request.method == 'POST' and assignment_request_form.is_valid():
         # edit request
         new_request = assignment_request_form.instance
@@ -141,7 +150,11 @@ def respond_assignment_request(request, request_id, text_override=None):
         messages.warning(request, text['already_replied'])
         return redirect('juntagrico-assignment-request:list')
 
-    assignment_response_form = AssignmentResponseForm(request.POST or None, instance=assignment_request)
+    areas = None
+    if not request.user.has_perm('juntagrico_assignment_request.can_confirm_assignments'):
+        # approvers of area can only assign their areas
+        areas = request.user.member.coordinated_areas.all()
+    assignment_response_form = AssignmentResponseForm(request.POST or None, instance=assignment_request, areas=areas)
     if request.method == 'POST' and assignment_response_form.is_valid():
         assignment_request = assignment_response_form.instance
         assignment_request.response_date = date.today()

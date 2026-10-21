@@ -40,7 +40,7 @@ class AssignmentRequestTestCase(JuntagricoTestCase):
                 approver = ''
             else:
                 approver = approver.pk
-        date = timezone.now()
+        date = timezone.localtime()
         data = {
             'job_time': date.strftime('%Y-%m-%d %H:%M') if for_form else date,
             'duration': 4,

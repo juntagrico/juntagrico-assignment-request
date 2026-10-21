@@ -1,15 +1,19 @@
-from juntagrico_assignment_request.models import AssignmentRequest
-
 """
 This hack ensures that the jobs from assignment request can not be manipulated.
 In the future juntagrico should offer ways to create custom job models in addons and make this hack obsolete.
 """
 
+import logging
+
+from juntagrico_assignment_request.models import AssignmentRequest
+
+log = logging.getLogger('juntagrico_assignment_request.hack')
+
 
 def bulk_save(elements):
     for element in elements:
         element.save()
-        print(f'Resaved {element}')
+        log.debug('Resaved assignment request %s', element.pk)
 
 
 def post_save_job_type(sender, instance, **kwds):
@@ -44,4 +48,4 @@ def pre_save_assignment(sender, instance, **kwds):
             instance.member = ar.member
             instance.amount = ar.get_amount()
             instance.job = ar.get_matching_job()
-            print(f'restored {instance} using {ar}')
+            log.debug('Restored assignment %s using assignment request %s', instance.pk, ar.pk)
