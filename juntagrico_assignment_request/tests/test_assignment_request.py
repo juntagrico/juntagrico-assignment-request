@@ -39,17 +39,30 @@ class AssignmentRequestTests(AssignmentRequestTestCase):
 
     def test_assignment_request_delete(self):
         ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.approver))
-        self.assertGet(reverse('juntagrico-assignment-request:delete', args=(ar.pk,)), 302)
+        self.assertPost(reverse('juntagrico-assignment-request:delete', args=(ar.pk,)), code=302)
         with self.assertRaises(AssignmentRequest.DoesNotExist):
             ar.refresh_from_db()
+
+    def test_assignment_request_delete_link_shows_confirmation(self):
+        # GET, e.g. the link in the rejection email, must not delete the request
+        ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.approver))
+        self.assertGet(reverse('juntagrico-assignment-request:delete', args=(ar.pk,)))
+        ar.refresh_from_db()
 
     def test_assignment_request_not_deletable(self):
         # can not delete accepted assignment request
         data = self.assignment_request_data(self.approver, approved=True)
         ar = AssignmentRequest.objects.create(**data)
         self.assertGet(reverse('juntagrico-assignment-request:delete', args=(ar.pk,)), 302)
+        self.assertPost(reverse('juntagrico-assignment-request:delete', args=(ar.pk,)), code=302)
         ar.refresh_from_db()
         self.assertNotEqual(ar, None)
+
+    def test_assignment_request_of_other_member_not_deletable(self):
+        ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.approver))
+        self.assertGet(reverse('juntagrico-assignment-request:delete', args=(ar.pk,)), 302, member=self.member2)
+        self.assertPost(reverse('juntagrico-assignment-request:delete', args=(ar.pk,)), code=302, member=self.member2)
+        ar.refresh_from_db()
 
     def test_assignment_request_wo_approver(self):
         self.assertPost(reverse('juntagrico-assignment-request:request'), self.assignment_request_data(for_form=True), 302)

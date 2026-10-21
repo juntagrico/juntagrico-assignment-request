@@ -47,16 +47,20 @@ def request_assignment(request, text_override=None):
 
 
 @login_required
+@highlighted_menu('request_assignment')
 def delete_request_assignment(request, request_id):
     """
-    Delete an assignment request
+    Delete an assignment request.
+    GET requests (e.g. links in emails) show a confirmation page.
     """
 
     assignment_request = get_object_or_404(AssignmentRequest, id=request_id)
-    if assignment_request.member == request.user.member\
-            and not assignment_request.assignment:
+    if assignment_request.member != request.user.member or assignment_request.assignment:
+        return redirect('juntagrico-assignment-request:request')
+    if request.method == 'POST':
         assignment_request.delete()
-    return redirect('juntagrico-assignment-request:request')
+        return redirect('juntagrico-assignment-request:request')
+    return render(request, "assignment_request/delete.html", {'assignment_request': assignment_request})
 
 
 @login_required
