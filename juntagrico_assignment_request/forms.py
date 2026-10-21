@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import date, timedelta
 
 from django.conf import settings
 from django.db.models import Q
@@ -60,6 +60,10 @@ class AssignmentRequestForm(ModelForm):
     def __init__(self, *args, member=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.member = member
+        # values before editing, to detect changes that need another approval
+        self.old_amount = self.instance.get_amount() if self.instance.pk else None
+        self.old_request_date = self.instance.request_date
+        self.old_status = self.instance.status
         approvers = get_approvers()
         if member is not None:
             # members can not approve their own requests
@@ -111,19 +115,62 @@ class AssignmentRequestForm(ModelForm):
                                get_approvers().filter(coordinated_areas=cleaned_data['activityarea']))
             if approver not in valid_approvers:
                 raise ValidationError(_('Ungültige Auswahl bei "Abgesprochen mit"'))
-        self.check_max_pending()
+        error = self.limit_error()
+        if error:
+            raise ValidationError(error)
         return cleaned_data
 
-    def check_max_pending(self):
-        # limit number of pending requests, as each new request sends emails to the approvers
-        max_pending = getattr(settings, 'ASSIGNMENT_REQUEST_MAX_PENDING', 10)
-        if max_pending is None or self.member is None or self.instance.pk:
-            return
-        pending = AssignmentRequest.objects.filter(member=self.member, status=AssignmentRequest.REQUESTED)
-        if pending.count() >= max_pending:
-            raise ValidationError(_('Du hast bereits %(count)s offene Anfragen. '
-                                    'Bitte warte, bis diese beantwortet sind.'),
-                                  params={'count': max_pending})
+    def amount_increased(self):
+        # an edited request with a higher amount must be approved again
+        if self.old_amount is None:
+            return False
+        amount = self.cleaned_data.get('amount')
+        duration = self.cleaned_data.get('duration')
+        if amount is None or duration is None:
+            return False
+        return AssignmentRequest(amount=amount, duration=duration).get_amount() > self.old_amount
+
+    def sends_notification(self):
+        # approvers are notified at most once per day about the same pending request
+        if self.instance.pk is None:
+            return True
+        notified_today = self.old_status == AssignmentRequest.REQUESTED and self.old_request_date == date.today()
+        return self.amount_increased() and not notified_today
+
+    def limit_error(self):
+        # limit number of requests, as each request sends emails to the approvers
+        if self.instance.pk:
+            return self.max_per_day_error() if self.sends_notification() else None
+        return self.new_request_limit_error()
+
+    def new_request_limit_error(self):
+        """
+        :return: error message, if the member can not create another request
+        """
+        if self.member is None:
+            return None
+        max_pending = getattr(settings, 'ASSIGNMENT_REQUEST_MAX_PENDING', 50)
+        if max_pending is not None:
+            pending = AssignmentRequest.objects.filter(member=self.member, status=AssignmentRequest.REQUESTED)
+            if pending.count() >= max_pending:
+                return gettext('Du hast bereits %(count)s offene Anfragen. '
+                               'Bitte warte, bis diese beantwortet sind.') % {'count': max_pending}
+        return self.max_per_day_error()
+
+    def max_per_day_error(self):
+        """
+        :return: error message, if the member sent the maximum number of requests today
+        """
+        max_per_day = getattr(settings, 'ASSIGNMENT_REQUEST_MAX_PER_DAY', 20)
+        if max_per_day is None or self.member is None:
+            return None
+        sent_today = AssignmentRequest.objects.filter(member=self.member, request_date=date.today())
+        if self.instance.pk:
+            sent_today = sent_today.exclude(pk=self.instance.pk)
+        if sent_today.count() >= max_per_day:
+            return gettext('Du hast heute bereits %(count)s Anfragen gesendet. '
+                           'Bitte versuche es morgen wieder.') % {'count': max_per_day}
+        return None
 
 
 class AssignmentResponseForm(ModelForm):
