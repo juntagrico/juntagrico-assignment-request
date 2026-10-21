@@ -102,7 +102,10 @@ class AssignmentRequest(models.Model):
         self.confirm_key = generate_confirm_key()
 
     def check_confirm_key(self, key):
-        return bool(self.confirm_key and key) and secrets.compare_digest(self.confirm_key.encode(), key.encode())
+        if not self.confirm_key:
+            # requests from before the key was introduced have none, nor have the links in their emails
+            return not key
+        return bool(key) and secrets.compare_digest(self.confirm_key.encode(), key.encode())
 
     def get_amount(self):
         """

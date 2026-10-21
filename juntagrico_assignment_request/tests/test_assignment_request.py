@@ -188,6 +188,30 @@ class AssignmentRequestTests(AssignmentRequestTestCase):
         self.assertEqual(ar.status, AssignmentRequest.REQUESTED)
         self.assertEqual(len(mail.outbox), 0)
 
+    def test_assignment_confirmation_without_key_for_old_request(self):
+        # requests from before the key was introduced have no key and are confirmed with the link from their emails
+        ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.approver))
+        AssignmentRequest.objects.filter(pk=ar.pk).update(confirm_key=None)
+        response = self.assertGet(self.confirm_url(ar, 'wrong'), 302, member=self.approver)
+        self.assertRedirects(response, reverse('juntagrico-assignment-request:respond', args=(ar.pk,)))
+        response = self.assertGet(reverse('juntagrico-assignment-request:confirm', args=(ar.pk,)), 302,
+                                  member=self.approver)
+        self.assertRedirects(response, reverse('juntagrico-assignment-request:list'))
+        ar.refresh_from_db()
+        self.assertEqual(ar.status, AssignmentRequest.CONFIRMED)
+
+    def test_assignment_confirmation_old_request_link_after_edit(self):
+        # editing an old request generates a key, such that the link without key from its first email is invalid
+        ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.approver))
+        AssignmentRequest.objects.filter(pk=ar.pk).update(confirm_key=None)
+        self.assertPost(reverse('juntagrico-assignment-request:edit', args=(ar.pk,)),
+                        self.assignment_request_data(self.approver, for_form=True, amount=99), 302)
+        response = self.assertGet(reverse('juntagrico-assignment-request:confirm', args=(ar.pk,)), 302,
+                                  member=self.approver)
+        self.assertRedirects(response, reverse('juntagrico-assignment-request:respond', args=(ar.pk,)))
+        ar.refresh_from_db()
+        self.assertEqual(ar.status, AssignmentRequest.REQUESTED)
+
     def test_assignment_confirmation_link_after_edit(self):
         # link from the first email must not confirm the edited request
         ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.approver))

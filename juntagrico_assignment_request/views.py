@@ -167,7 +167,8 @@ def respond_assignment_request(request, request_id, text_override=None):
 def confirm_assignment_request(request, request_id, text_override=None):
     """
     Confirm an assignment request directly with the link from the email.
-    Without a valid key, e.g. because the request was changed in the meantime, the response form is shown instead
+    Without a valid key, e.g. because the request was changed in the meantime, the response form is shown instead.
+    Requests from before the key was introduced are still confirmed with the link without key from their emails
     """
     text = dict(
         confirmed=_("Anfrage bestätigt."),
