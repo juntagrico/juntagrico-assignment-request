@@ -80,9 +80,9 @@
                             {% endif %}
                         </td>
                         <td class="text-nowrap">
+                            {% if not assignment_request.is_confirmed %}
                             <a href="{% url 'juntagrico-assignment-request:edit' assignment_request.id %}"
                                class="edit"><i class="bi bi-pencil-square"></i></a>
-                            {% if not assignment_request.is_confirmed %}
                             <a href="{% url 'juntagrico-assignment-request:delete' assignment_request.id %}"
                                onclick="return confirm('{% trans 'Bist du sicher, dass du die Anfrage löschen möchtest' %}');"
                                class="delete"><i class="bi bi-trash"></i></a>

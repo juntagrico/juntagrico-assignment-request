@@ -53,6 +53,23 @@ def only_visible(queryset):
 ASSIGNMENT_REQUEST_AREAS = only_visible
 ```
 
+### ASSIGNMENT_REQUEST_GRACE_PERIOD
+
+Limits how far in the past members can request assignments. Requests in the future are never allowed.
+
+- `None` (default): Assignments can be requested for any date in the past.
+- A number of days: Assignments can be requested for dates in the current business year
+  and for dates up to this number of days before today, even if they are in the last business year.
+  With `0` only dates in the current business year are allowed.
+
+Existing requests can keep their date, even if it is not allowed anymore.
+
+Example: Allow requests for the last business year during the first two weeks of the new business year:
+
+```python
+ASSIGNMENT_REQUEST_GRACE_PERIOD = 14
+```
+
 ### Template Blocks
 
 See [docs](https://juntagrico.readthedocs.io/en/latest/reference/templates.html#set-up-template-overrides) on how to set up template overrides
@@ -65,7 +82,7 @@ Change the instructions at the top of the request form
 
 1. Members will see a new entry in the menu to request assignments
 2. They are presented with a form to fill out the details of the job they did
-3. Below the form, they see a list of assignments that they already sent with the option to edit or delete them
+3. Below the form, they see a list of assignments that they already sent with the option to edit or delete them, as long as they are not confirmed
 4. Upon sending the form, the selected confirmer (or the fallback users) will be informed by email
 5. The confirmer can modify the assignment amount, accept, deny or just send a message to the member
     - For convenience, there is a one click option to confirm the assignment in the email

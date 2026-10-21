@@ -1,7 +1,11 @@
+from datetime import timedelta
+
 from django.conf import settings
 from django.db.models import Q
 from django.core.exceptions import ValidationError
 from django.forms import ModelForm, DateTimeInput
+from django.utils import timezone
+from django.utils.formats import date_format
 from django.utils.translation import gettext_lazy as _
 from django.utils.translation import gettext
 from django.urls import reverse
@@ -9,6 +13,8 @@ from django.urls import reverse
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Submit, HTML
 from crispy_forms.bootstrap import FormActions
+
+from juntagrico.util.temporal import start_of_business_year
 
 from juntagrico_assignment_request.models import AssignmentRequest
 from juntagrico_assignment_request.utils import get_approvers
@@ -72,6 +78,27 @@ class AssignmentRequestForm(ModelForm):
                 Submit('submit', _('Absenden'), css_class='btn-success'),
             )
         )
+
+    def clean_job_time(self):
+        job_time = self.cleaned_data['job_time']
+        old_job_time = self.instance.job_time if self.instance.pk else None
+        if old_job_time and job_time.replace(second=0, microsecond=0) == old_job_time.replace(second=0, microsecond=0):
+            # keep date of existing requests, even if it would not be valid anymore
+            return job_time
+        if job_time > timezone.now():
+            raise ValidationError(_('Das Datum darf nicht in der Zukunft liegen.'))
+        earliest = self.earliest_job_date()
+        if earliest and timezone.localtime(job_time).date() < earliest:
+            raise ValidationError(_('Das Datum darf nicht vor dem {} liegen.').format(date_format(earliest)))
+        return job_time
+
+    @staticmethod
+    def earliest_job_date():
+        # None: no limit. Otherwise, the current business year and the given number of days before today are allowed
+        grace_period = getattr(settings, 'ASSIGNMENT_REQUEST_GRACE_PERIOD', None)
+        if grace_period is None:
+            return None
+        return min(start_of_business_year(), timezone.localdate() - timedelta(days=grace_period))
 
     def clean(self):
         # check that approver is valid for the selected area
