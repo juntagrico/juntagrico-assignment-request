@@ -6,11 +6,6 @@ from . import AssignmentRequestTestCase
 
 
 class AssignmentRequestTests(AssignmentRequestTestCase):
-    @staticmethod
-    def confirm_url(ar, key=None):
-        url = reverse('juntagrico-assignment-request:confirm', args=(ar.pk,))
-        return f'{url}?key={ar.confirm_key if key is None else key}'
-
     def test_assignment_request(self):
         self.assertGet(reverse('juntagrico-assignment-request:request'))
         self.assertPost(reverse('juntagrico-assignment-request:request'),
