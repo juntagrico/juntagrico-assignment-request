@@ -1,3 +1,5 @@
+from datetime import date, timedelta
+
 from django.core import mail
 from django.urls import reverse
 
@@ -223,7 +225,9 @@ class AssignmentRequestTests(AssignmentRequestTestCase):
 
     def test_assignment_confirmation_link_after_edit(self):
         # link from the first email must not confirm the edited request
-        ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.approver))
+        # request from yesterday, so the edit notifies the approver again
+        ar = AssignmentRequest.objects.create(**self.assignment_request_data(
+            self.approver, request_date=date.today() - timedelta(days=1)))
         old_url = self.confirm_url(ar)
         self.assertPost(reverse('juntagrico-assignment-request:edit', args=(ar.pk,)),
                         self.assignment_request_data(self.approver, for_form=True, amount=99), 302)

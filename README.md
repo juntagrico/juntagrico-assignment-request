@@ -70,6 +70,28 @@ Example: Allow requests for the last business year during the first two weeks of
 ASSIGNMENT_REQUEST_GRACE_PERIOD = 14
 ```
 
+### ASSIGNMENT_REQUEST_MAX_PENDING
+
+Maximum number of pending (not yet answered) requests per member.
+Each new request sends an email to the approvers, so this limits the number of emails a member can trigger.
+If the limit is reached, the request form is replaced by a message.
+Set it to `None` to disable the limit. Default: `50`
+
+```python
+ASSIGNMENT_REQUEST_MAX_PENDING = 50
+```
+
+### ASSIGNMENT_REQUEST_MAX_PER_DAY
+
+Maximum number of requests per member and day.
+New requests and edited requests that need another approval (higher amount) count, using the date of the request.
+The approvers are notified at most once per day about the same request.
+Set it to `None` to disable the limit. Default: `20`
+
+```python
+ASSIGNMENT_REQUEST_MAX_PER_DAY = 20
+```
+
 ### Template Blocks
 
 See [docs](https://juntagrico.readthedocs.io/en/latest/reference/templates.html#set-up-template-overrides) on how to set up template overrides
