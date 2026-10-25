@@ -1,3 +1,5 @@
+from datetime import date, timedelta
+
 from django.core import mail
 from django.urls import reverse
 
@@ -88,18 +90,18 @@ class AssignmentRequestTests(AssignmentRequestTestCase):
     def test_assignment_confirmation(self):
         ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.approver))
         # normal member can not approve
-        self.assertGet(reverse('juntagrico-assignment-request:confirm', args=(ar.pk,)), 302)
+        self.assertGet(self.confirm_url(ar), 302)
         ar.refresh_from_db()
         self.assertEqual(ar.status, AssignmentRequest.REQUESTED)
         # area approvers can not approve this request
-        self.assertGet(reverse('juntagrico-assignment-request:confirm', args=(ar.pk,)), 302, member=self.member2)
+        self.assertGet(self.confirm_url(ar), 302, member=self.member2)
         ar.refresh_from_db()
         self.assertEqual(ar.status, AssignmentRequest.REQUESTED)
-        self.assertGet(reverse('juntagrico-assignment-request:confirm', args=(ar.pk,)), 302, member=self.area_admin)
+        self.assertGet(self.confirm_url(ar), 302, member=self.area_admin)
         ar.refresh_from_db()
         self.assertEqual(ar.status, AssignmentRequest.REQUESTED)
         # general approver can confirm
-        self.assertGet(reverse('juntagrico-assignment-request:confirm', args=(ar.pk,)), 302, member=self.approver)
+        self.assertGet(self.confirm_url(ar), 302, member=self.approver)
         ar.refresh_from_db()
         self.assertEqual(ar.status, AssignmentRequest.CONFIRMED)
         self.assertEqual(ar.assignment.amount, ar.get_amount())
@@ -109,20 +111,20 @@ class AssignmentRequestTests(AssignmentRequestTestCase):
     def test_assignment_confirmation_in_area(self):
         ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.area_admin))
         # approver for other area can not confirm can not approve
-        self.assertGet(reverse('juntagrico-assignment-request:confirm', args=(ar.pk,)), 302, member=self.member2)
+        self.assertGet(self.confirm_url(ar), 302, member=self.member2)
         ar.refresh_from_db()
         self.assertEqual(ar.status, AssignmentRequest.REQUESTED)
-        self.assertGet(reverse('juntagrico-assignment-request:confirm', args=(ar.pk,)), 302, member=self.area_admin)
+        self.assertGet(self.confirm_url(ar), 302, member=self.area_admin)
         ar.refresh_from_db()
         self.assertEqual(ar.status, AssignmentRequest.CONFIRMED)
 
     def test_assignment_confirmation_without_area(self):
         ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.area_admin, activityarea=None))
         # approver for other area can not confirm can not approve
-        self.assertGet(reverse('juntagrico-assignment-request:confirm', args=(ar.pk,)), 302, member=self.member2)
+        self.assertGet(self.confirm_url(ar), 302, member=self.member2)
         ar.refresh_from_db()
         self.assertEqual(ar.status, AssignmentRequest.REQUESTED)
-        self.assertGet(reverse('juntagrico-assignment-request:confirm', args=(ar.pk,)), 302, member=self.approver)
+        self.assertGet(self.confirm_url(ar), 302, member=self.approver)
         ar.refresh_from_db()
         self.assertEqual(ar.status, AssignmentRequest.CONFIRMED)
 
@@ -185,3 +187,63 @@ class AssignmentRequestTests(AssignmentRequestTestCase):
                         self.assignment_response_data('submit'), 302, member=self.area_admin)
         ar.refresh_from_db()
         self.assertEqual(len(mail.outbox), 1)
+
+    def test_assignment_confirmation_without_key(self):
+        # links without (valid) key show the response form instead of confirming
+        ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.approver))
+        for url in (reverse('juntagrico-assignment-request:confirm', args=(ar.pk,)), self.confirm_url(ar, 'wrong'),
+                    self.confirm_url(ar, 'ungültig')):
+            response = self.assertGet(url, 302, member=self.approver)
+            self.assertRedirects(response, reverse('juntagrico-assignment-request:respond', args=(ar.pk,)))
+        ar.refresh_from_db()
+        self.assertEqual(ar.status, AssignmentRequest.REQUESTED)
+        self.assertEqual(len(mail.outbox), 0)
+
+    def test_assignment_confirmation_without_key_for_old_request(self):
+        # requests from before the key was introduced have no key and are confirmed with the link from their emails
+        ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.approver))
+        AssignmentRequest.objects.filter(pk=ar.pk).update(confirm_key=None)
+        response = self.assertGet(self.confirm_url(ar, 'wrong'), 302, member=self.approver)
+        self.assertRedirects(response, reverse('juntagrico-assignment-request:respond', args=(ar.pk,)))
+        response = self.assertGet(reverse('juntagrico-assignment-request:confirm', args=(ar.pk,)), 302,
+                                  member=self.approver)
+        self.assertRedirects(response, reverse('juntagrico-assignment-request:list'))
+        ar.refresh_from_db()
+        self.assertEqual(ar.status, AssignmentRequest.CONFIRMED)
+
+    def test_assignment_confirmation_old_request_link_after_edit(self):
+        # editing an old request generates a key, such that the link without key from its first email is invalid
+        ar = AssignmentRequest.objects.create(**self.assignment_request_data(self.approver))
+        AssignmentRequest.objects.filter(pk=ar.pk).update(confirm_key=None)
+        self.assertPost(reverse('juntagrico-assignment-request:edit', args=(ar.pk,)),
+                        self.assignment_request_data(self.approver, for_form=True, amount=99), 302)
+        response = self.assertGet(reverse('juntagrico-assignment-request:confirm', args=(ar.pk,)), 302,
+                                  member=self.approver)
+        self.assertRedirects(response, reverse('juntagrico-assignment-request:respond', args=(ar.pk,)))
+        ar.refresh_from_db()
+        self.assertEqual(ar.status, AssignmentRequest.REQUESTED)
+
+    def test_assignment_confirmation_link_after_edit(self):
+        # link from the first email must not confirm the edited request
+        # request from yesterday, so the edit notifies the approver again
+        ar = AssignmentRequest.objects.create(**self.assignment_request_data(
+            self.approver, request_date=date.today() - timedelta(days=1)))
+        old_url = self.confirm_url(ar)
+        self.assertPost(reverse('juntagrico-assignment-request:edit', args=(ar.pk,)),
+                        self.assignment_request_data(self.approver, for_form=True, amount=99), 302)
+        self.client.force_login(self.approver.user)
+        response = self.client.get(old_url, follow=True)
+        ar.refresh_from_db()
+        self.assertEqual(ar.status, AssignmentRequest.REQUESTED)
+        self.assertEqual(response.context['form']['amount'].value(), 99)
+        # link from the new email confirms
+        self.assertIn(self.confirm_url(ar), mail.outbox[-1].body)
+        self.assertGet(self.confirm_url(ar), 302, member=self.approver)
+        ar.refresh_from_db()
+        self.assertEqual(ar.status, AssignmentRequest.CONFIRMED)
+
+    def test_request_mail_contains_confirm_key(self):
+        self.assertPost(reverse('juntagrico-assignment-request:request'),
+                        self.assignment_request_data(self.approver, for_form=True), 302)
+        ar = AssignmentRequest.objects.get(approver=self.approver)
+        self.assertIn(self.confirm_url(ar), mail.outbox[0].body)
