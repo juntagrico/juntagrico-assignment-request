@@ -1,4 +1,5 @@
 from django.contrib.auth.models import Permission
+from django.urls import reverse
 from django.utils import timezone
 from juntagrico.tests import JuntagricoTestCase
 
@@ -32,6 +33,11 @@ class AssignmentRequestTestCase(JuntagricoTestCase):
         cls.member2.user.user_permissions.add(
             Permission.objects.get(codename='can_confirm_assignments_for_area'))
         cls.member2.user.save()
+
+    @staticmethod
+    def confirm_url(ar, key=None):
+        url = reverse('juntagrico-assignment-request:confirm', args=(ar.pk,))
+        return f'{url}?key={ar.confirm_key if key is None else key}'
 
     @classmethod
     def assignment_request_data(cls, approver=None, for_form=False, approved=False, **kwargs):

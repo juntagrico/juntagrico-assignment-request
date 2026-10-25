@@ -12,7 +12,7 @@ class SelfApprovalTests(AssignmentRequestTestCase):
         return AssignmentRequest.objects.create(**data)
 
     def assertNotConfirmable(self, ar, member):
-        self.assertGet(reverse('juntagrico-assignment-request:confirm', args=(ar.pk,)), 302, member=member)
+        self.assertGet(self.confirm_url(ar), 302, member=member)
         self.assertGet(reverse('juntagrico-assignment-request:respond', args=(ar.pk,)), 302, member=member)
         self.assertPost(reverse('juntagrico-assignment-request:respond', args=(ar.pk,)),
                         self.assignment_response_data('confirm'), 302, member=member)
@@ -31,7 +31,7 @@ class SelfApprovalTests(AssignmentRequestTestCase):
 
     def test_other_approver_can_confirm(self):
         ar = self.own_request(self.approver)
-        self.assertPost(reverse('juntagrico-assignment-request:confirm', args=(ar.pk,)), code=302, member=self.approver2)
+        self.assertGet(self.confirm_url(ar), 302, member=self.approver2)
         ar.refresh_from_db()
         self.assertEqual(ar.status, AssignmentRequest.CONFIRMED)
 
